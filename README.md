@@ -1,7 +1,7 @@
 # sing-box 5 protocol 
 - vless reality
 - vmess ws +Argo tunnel
-- wmess ws
+- vmess ws
 - Hysteria2
 - Tuic5
 
