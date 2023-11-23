@@ -549,8 +549,9 @@ telegram_ip() {
 
         echo -e "Enter Your ${yellow}chat ID ${rest} .${purple}(Get in: bot--> @userinfobot) :${rest} \c"
         read chat_id
-        echo "Please Wait..."
         display_progress 20
+        echo "Please wait about 20s for connecting Argo tunnel..."
+        
 
         message="🖐سلام، کانفیگ های شما با موفقیت ساخته شد.
 
@@ -571,7 +572,7 @@ $(config_ip | grep -o 'vmess://.*')"
             --data-urlencode "text=$message")
 
         if [[ "$(echo "$response" | jq -r '.ok')" == "true" ]]; then
-            echo -e "${green}Message sent successfully!${rest}"
+            echo -e "${green}Message sent to telegram successfully!${rest}"
         else
             echo -e "${red}Failed to send message. Check your bot token and chat ID.${rest}"
         fi
@@ -581,7 +582,8 @@ $(config_ip | grep -o 'vmess://.*')"
 }
 
 config_tls() {
-    display_progress 12
+    display_progress 2
+    sleep 1
     echo ""
     
     tuic="tuic://$uuid:$uuid@$domain:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=$domain&allow_insecure=0#peyman-tuic5"
@@ -616,6 +618,8 @@ telegram_tls() {
 
         echo -e "Enter Your ${yellow}chat ID ${rest} .${purple}(Get in: bot--> @userinfobot) :${rest} \c"
         read chat_id
+        display_progress 20
+        sleep 1
         echo "Please Wait..."
 
         message="🖐سلام، کانفیگ های شما با موفقیت ساخته شد.
@@ -637,7 +641,7 @@ $(config_tls | grep -o 'vmess://.*')"
             --data-urlencode "text=$message")
 
         if [[ "$(echo "$response" | jq -r '.ok')" == "true" ]]; then
-            echo -e "${green}Message sent successfully!${rest}"
+            echo -e "${green}Message sent to telegram successfully!${rest}"
         else
             echo -e "${red}Failed to send message. Check your bot token and chat ID.${rest}"
         fi
