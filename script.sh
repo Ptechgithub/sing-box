@@ -9,6 +9,34 @@ cyan='\033[0;36m'
 white='\033[0;37m'
 rest='\033[0m'
 
+display_progress() {
+    local duration=$1
+    local sleep_interval=0.1
+    local progress=0
+    local bar_length=40
+    local colors=("[41m" "[42m" "[43m" "[44m" "[45m" "[46m" "[47m")
+
+    while [ $progress -lt $duration ]; do
+        echo -ne "\r${colors[$((progress % 7))]}"
+        for ((i = 0; i < bar_length; i++)); do
+            if [ $i -lt $((progress * bar_length / duration)) ]; then
+                echo -ne "█"
+            else
+                echo -ne "░"
+            fi
+        done
+        echo -ne "[0m ${progress}%"
+        progress=$((progress + 1))
+        sleep $sleep_interval
+    done
+    echo -ne "\r${colors[0]}"
+    for ((i = 0; i < bar_length; i++)); do
+        echo -ne " "
+    done
+    echo -ne "[0m 100%"
+    echo
+}
+
 #detect_distribution
 detect_distribution() {
     local supported_distributions=("ubuntu" "debian" "centos" "fedora")
@@ -45,6 +73,32 @@ check_dependencies() {
             sudo "${pm}" install "${dep}" -y
         fi
     done
+}
+
+download_cf() {
+    # Check if the file already exists
+    if [ -x /etc/s-box/cloudflared ]; then
+        echo "cf is already installed."
+        return 0
+    fi
+     [ ! -d "/etc/s-box" ] && mkdir /etc/s-box
+    # Check the operating system type
+    if [[ "$(uname -m)" == "x86_64" ]]; then
+        download_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
+    elif [[ "$(uname -m)" == "aarch64" ]]; then
+        download_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
+    elif [[ "$(uname -m)" == "armv7l" ]]; then
+        download_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm"
+    elif [[ "$(uname -m)" == "i686" ]]; then
+        download_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-386"
+    else
+        echo "Unsupported operating system."
+        return 1
+    fi
+
+    # Download and install if the file doesn't exist
+    sudo wget -O /etc/s-box/cloudflared $download_url
+    sudo chmod +x /etc/s-box/cloudflared
 }
 
 #install certificates
@@ -153,6 +207,7 @@ install() {
     
     apt update -y
     check_dependencies
+    download_cf
     download-sb
     install_certs
     uuid=$(sing-box generate uuid)
@@ -164,25 +219,25 @@ install() {
 
     if [ "$randomPort" == "y" ]; then
         vlessport=$(shuf -i 2000-65535 -n 1)
-        vmessport=${vmessport:-2087}
+        vmessport=${vmessport:-443}
         hyport=$(shuf -i 2000-65535 -n 1)
         tuicport=$(shuf -i 2000-65535 -n 1)
         
     else
-        read -p "Enter VLESS port [default: 443]: " vlessport
-        vlessport=${vlessport:-443}
+        read -p "Enter VLESS port [default: 2087]: " vlessport
+        vlessport=${vlessport:-2087}
         while lsof -Pi :$vlessport -sTCP:LISTEN -t >/dev/null ; do
             echo -e "${red}Error: Port $vlessport is already in use.${rest}"
             read -p "Enter a different VLESS port: " vlessport
-            vlessport=${vlessport:-443}
+            vlessport=${vlessport:-2087}
         done
 
-        read -p "Enter VMESS port [default: 2087]: " vmessport
-        vmessport=${vmessport:-2087}
+        read -p "Enter VMESS port [default: 443]: " vmessport
+        vmessport=${vmessport:-443}
         while lsof -Pi :$vmessport -sTCP:LISTEN -t >/dev/null ; do
             echo -e "${red}Error: Port $vmessport is already in use.${rest}"
             read -p "Enter a different VMESS port: " vmessport
-            vmessport=${vmessport:-2087}
+            vmessport=${vmessport:-443}
         done
 
         read -p "Enter HYSTERIA port [default: 2096]: " hyport
@@ -203,6 +258,7 @@ install() {
     fi
     server_config
     config-sing-box
+    (crontab -l ; echo '0 1 * * * systemctl restart sing-box > /dev/null 2>&1') | crontab -
     if [[ $certInput == 2 ]]; then
         telegram_tls
         setup_service
@@ -441,7 +497,7 @@ EOL
 
 
 config_ip() {
-    sleep 2
+    display_progress 12
     echo ""
     
     tuic="tuic://$uuid:$uuid@$ip:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=www.bing.com&allow_insecure=1#peyman-tuic5"
@@ -464,6 +520,23 @@ config_ip() {
     echo "vmess://$encoded_vmess"
     echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
     echo -e "${purple}----------------------------------------------------------------${rest}"
+    
+    nohup /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /etc/s-box/argo.log 2>&1 &
+    sleep 5
+    link=$(grep -o 'https://.*trycloudflare.com' /etc/s-box/argo.log | sed 's/https:\/\///')
+    
+    vmess="{\"add\":\"www.wto.org\",\"aid\":\"0\",\"host\":\"$link\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"443\",\"ps\":\"peyman-vmess-Argo\",\"tls\":\"tls\",\"sni\":\"$link\",\"type\":\"none\",\"v\":\"2\"}"
+    encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
+    echo "vmess://$encoded_vmess"
+    echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_Argo_config.txt"
+    echo -e "${purple}----------------------------------------------------------------${rest}"
+    
+    if crontab -l | grep -q -F 'cloudflared tunnel'; then
+    crontab -l | sed 's~cloudflared tunnel.*~@reboot /bin/bash -c "/etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1"~' | crontab -
+else
+    nohup /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edgeip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1 &
+    (crontab -l ; echo '@reboot /bin/bash -c "/etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1"') | crontab -
+fi
 }
 
 telegram_ip() {
@@ -477,6 +550,7 @@ telegram_ip() {
         echo -e "Enter Your ${yellow}chat ID ${rest} .${purple}(Get in: bot--> @userinfobot) :${rest} \c"
         read chat_id
         echo "Please Wait..."
+        display_progress 20
 
         message="🖐سلام، کانفیگ های شما با موفقیت ساخته شد.
 
@@ -489,7 +563,7 @@ $(config_ip | grep -o 'hysteria2://.*#peyman-hy2')
 3⃣
 $(config_ip | grep -o 'vless://.*#peyman-vless-reality')
 
-4⃣
+4⃣ و 5️⃣
 $(config_ip | grep -o 'vmess://.*')"
         
         response=$(curl -s "https://api.telegram.org/bot$token/sendMessage" \
@@ -497,7 +571,7 @@ $(config_ip | grep -o 'vmess://.*')"
             --data-urlencode "text=$message")
 
         if [[ "$(echo "$response" | jq -r '.ok')" == "true" ]]; then
-            echo -e "${green}Message sent to Telegram successfully!${rest}"
+            echo -e "${green}Message sent successfully!${rest}"
         else
             echo -e "${red}Failed to send message. Check your bot token and chat ID.${rest}"
         fi
@@ -507,7 +581,7 @@ $(config_ip | grep -o 'vmess://.*')"
 }
 
 config_tls() {
-    sleep 2
+    display_progress 12
     echo ""
     
     tuic="tuic://$uuid:$uuid@$domain:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=$domain&allow_insecure=0#peyman-tuic5"
@@ -563,7 +637,7 @@ $(config_tls | grep -o 'vmess://.*')"
             --data-urlencode "text=$message")
 
         if [[ "$(echo "$response" | jq -r '.ok')" == "true" ]]; then
-            echo -e "${green}Message sent to Telegram successfully!${rest}"
+            echo -e "${green}Message sent successfully!${rest}"
         else
             echo -e "${red}Failed to send message. Check your bot token and chat ID.${rest}"
         fi
@@ -586,9 +660,10 @@ uninstall() {
 
     # Remove service file
     sudo rm /etc/systemd/system/s-box.service
-    sudo rm -r /etc/s-box
-    sudo rm -rf /root/peyman/configs
+    sudo rm -rf /etc/s-box
+    sudo rm -rf /root/peyman
     sudo systemctl reset-failed
+    crontab -r
     echo "Uninstallation completed successfully."
 }
 
