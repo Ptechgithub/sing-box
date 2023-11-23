@@ -577,6 +577,7 @@ $(config_ip | grep -o 'vmess://.*')"
             echo -e "${red}Failed to send message. Check your bot token and chat ID.${rest}"
         fi
     else
+        echo "Please Wait..."
         show_output=$(config_ip)
     fi
 }
