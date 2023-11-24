@@ -7,5 +7,5 @@
 
 ## install
 ```
-bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/sing-box/main/install)
+bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/sing-box/main/install.sh)
 ```
