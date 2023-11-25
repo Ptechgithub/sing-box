@@ -972,7 +972,6 @@ EOL
 options() {
     clear
     echo -e "${purple}1)${rest} Show Argo Host"
-    echo -e "${purple}2)${rest} Change Ports"
     echo -e "${red}0)${rest} Back to Menu"
     echo -e "${cyan}Enter your choice${rest} : \c"
     read choice
@@ -980,9 +979,6 @@ options() {
     case $choice in
         1)
             argo_host
-            ;;
-        2)
-           change_port
             ;;
         0)
             menu
