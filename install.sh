@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#colors
 red='\033[0;31m'
 green='\033[0;32m'
 yellow='\033[0;33m'
@@ -9,6 +10,7 @@ cyan='\033[0;36m'
 white='\033[0;37m'
 rest='\033[0m'
 
+#progress bar
 display_progress() {
     local duration=$1
     local sleep_interval=0.1
@@ -47,6 +49,7 @@ detect_distribution() {
             pm="apt"
             [ "${ID}" == "centos" ] && pm="yum"
             [ "${ID}" == "fedora" ] && pm="dnf"
+            "$pm" update -y
         else
             echo "Unsupported distribution!"
             exit 1
@@ -57,10 +60,23 @@ detect_distribution() {
     fi
 }
 
+#realip
 realip(){
     ip=$(curl -s4m8 ip.sb -k) || ip=$(curl -s6m8 ip.sb -k)
 }
+
+#check_and_close_port
+check_and_close_port() {
+    local port=80
+    
+    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null ; then
+        echo "Port $port is in use. Closing the port..."
+        fuser -k $port/tcp
+    fi
+}
+
 ip=$(hostname -I | awk '{print $1}')
+
 #check_dependencies
 check_dependencies() {
     detect_distribution
@@ -82,6 +98,7 @@ download_cf() {
         return 0
     fi
      [ ! -d "/etc/s-box" ] && mkdir /etc/s-box
+    [ ! -d "/root/peyman/configs" ] && mkdir -p /root/peyman/configs
     # Check the operating system type
     if [[ "$(uname -m)" == "x86_64" ]]; then
         download_url="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
@@ -95,18 +112,14 @@ download_cf() {
         echo "Unsupported operating system."
         return 1
     fi
-
+    
     # Download and install if the file doesn't exist
-    sudo wget -O /etc/s-box/cloudflared $download_url
+    sudo wget -O /etc/s-box/cloudflared $download_url >/dev/null 2>&1
     sudo chmod +x /etc/s-box/cloudflared
 }
 
 #install certificates
 install_certs(){
-    detect_distribution
-    [ ! -d "/root/peyman/configs" ] && mkdir -p /root/peyman/configs
-    [ ! -d "/etc/s-box" ] && mkdir /etc/s-box
-    
     echo ""
     echo -e "${cyan}Methods of applying certificate :${rest}"
     echo -e "${green}1.${rest}Bing self-signed certificate ${yellow} (default) ${rest}"
@@ -138,6 +151,7 @@ install_certs(){
             read -p "Please enter the domain name：" domain
             [[ -z $domain ]] && red "No domain name entered, unable to perform operation！" && exit 1
             echo -e "${green}Domain name entered: $domain${rest}" && sleep 1
+            check_and_close_port
             domainIP=$(curl -sm8 ipget.net/?ip="${domain}")
             if [[ $domainIP == $ip ]]; then
                 if [[ $ID == "CentOS" ]]; then
@@ -183,6 +197,7 @@ install_certs(){
         echo -e "${green}You selected Bing self-signed certificate.${rest}"
         cert_path="/root/peyman/cert.crt"
         key_path="/root/peyman/private.key"
+        [ ! -d "/root/peyman/configs" ] && mkdir -p /root/peyman/configs
         openssl ecparam -genkey -name prime256v1 -out /root/peyman/private.key
         openssl req -new -x509 -days 36500 -key /root/peyman/private.key -out /root/peyman/cert.crt -subj "/CN=www.bing.com"
         chmod 777 /root/peyman/cert.crt
@@ -193,6 +208,7 @@ install_certs(){
     fi
 }
 
+#download sing-box
 download-sb(){
     bash <(curl -fsSL https://sing-box.app/deb-install.sh)
 }
@@ -205,7 +221,6 @@ install() {
         echo "Installing..."
     fi
     
-    apt update -y
     check_dependencies
     download_cf
     download-sb
@@ -215,8 +230,8 @@ install() {
     private_key=$(echo $keys | awk -F " " '{print $2}')
     public_key=$(echo $keys | awk -F " " '{print $4}')
     short_id=$(openssl rand -hex 8)
-    read -p "Do you want to use random Port [y/n]: " randomPort
-
+    read -p "Do you want to use random Ports? [y/n]: " randomPort
+    randomPort=${randomPort:-"y"}
     if [ "$randomPort" == "y" ]; then
         vlessport=$(shuf -i 2000-65535 -n 1)
         vmessport=${vmessport:-443}
@@ -258,7 +273,8 @@ install() {
     fi
     server_config
     config-sing-box
-    (crontab -l ; echo '0 1 * * * systemctl restart sing-box > /dev/null 2>&1') | crontab -
+    sed -i '/sing-box/d' /etc/crontab >/dev/null 2>&1
+    echo "0 1 * * * systemctl restart sing-box >/dev/null 2>&1" >> /etc/crontab
     if [[ $certInput == 2 ]]; then
         telegram_tls
         setup_service
@@ -495,48 +511,58 @@ EOL
     sudo systemctl enable s-box.service
 }
 
-
 config_ip() {
     display_progress 12
-    echo ""
-    
-    tuic="tuic://$uuid:$uuid@$ip:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=www.bing.com&allow_insecure=1#peyman-tuic5"
-    echo "$tuic"
-    echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
-    
-    hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com#peyman-hy2"
-    echo "$hysteria2"
-    echo "$hysteria2" > "/root/peyman/configs/hysteria2_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
-    
-    vless="vless://$uuid@$ip:$vlessport?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.yahoo.com&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#peyman-vless-reality"
-    echo "$vless"
-    echo "$vless" > "/root/peyman/configs/vless_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
-    
-    vmess="{\"add\":\"$ip\",\"aid\":\"0\",\"host\":\"www.bing.com\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"$vmessport\",\"ps\":\"peyman-ws\",\"tls\":\"\",\"type\":\"none\",\"v\":\"2\"}"
-    encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
-    echo "vmess://$encoded_vmess"
-    echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
-    
     nohup /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /etc/s-box/argo.log 2>&1 &
-    sleep 5
-    link=$(grep -o 'https://.*trycloudflare.com' /etc/s-box/argo.log | sed 's/https:\/\///')
     
-    vmess="{\"add\":\"www.wto.org\",\"aid\":\"0\",\"host\":\"$link\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"443\",\"ps\":\"peyman-vmess-Argo\",\"tls\":\"tls\",\"sni\":\"$link\",\"type\":\"none\",\"v\":\"2\"}"
-    encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
-    echo "vmess://$encoded_vmess"
-    echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_Argo_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
+    max_wait_seconds=15
+    seconds_waited=0
     
-    if crontab -l | grep -q -F 'cloudflared tunnel'; then
-    crontab -l | sed 's~cloudflared tunnel.*~@reboot /bin/bash -c "/etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1"~' | crontab -
-else
-    nohup /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edgeip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1 &
-    (crontab -l ; echo '@reboot /bin/bash -c "/etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1"') | crontab -
-fi
+    while [ $seconds_waited -lt $max_wait_seconds ]; do
+        if [ -f /etc/s-box/argo.log ] && grep -q 'https://.*trycloudflare.com' /etc/s-box/argo.log; then
+            break
+        fi
+        sleep 1
+        ((seconds_waited++))
+    done
+    
+    if [ $seconds_waited -ge $max_wait_seconds ]; then
+        echo "Argo Can't run."
+    else
+        link=$(grep -o 'https://.*trycloudflare.com' /etc/s-box/argo.log | sed 's/https:\/\///')
+        echo ""
+        echo -e "${purple}--------------------These are your configs.----------------------${rest}"
+        echo ""
+        tuic="tuic://$uuid:$uuid@$ip:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=www.bing.com&allow_insecure=1#peyman-tuic5"
+        echo "$tuic"
+        echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
+        
+        hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com#peyman-hy2"
+        echo "$hysteria2"
+        echo "$hysteria2" > "/root/peyman/configs/hysteria2_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
+
+        vless="vless://$uuid@$ip:$vlessport?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.yahoo.com&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#peyman-vless-reality"
+        echo "$vless"
+        echo "$vless" > "/root/peyman/configs/vless_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
+
+        vmess="{\"add\":\"$ip\",\"aid\":\"0\",\"host\":\"www.bing.com\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"$vmessport\",\"ps\":\"peyman-ws\",\"tls\":\"\",\"type\":\"none\",\"v\":\"2\"}"
+        encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
+        echo "vmess://$encoded_vmess"
+        echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
+
+        vmess="{\"add\":\"www.wto.org\",\"aid\":\"0\",\"host\":\"$link\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"443\",\"ps\":\"peyman-vmess-Argo\",\"tls\":\"tls\",\"sni\":\"$link\",\"type\":\"none\",\"v\":\"2\"}"
+        encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
+        echo "vmess://$encoded_vmess"
+        echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_Argo_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
+        
+        sed -i '/--edgeip/d' /etc/crontab >/dev/null 2>&1
+        echo "@reboot /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edgeip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1" >> /etc/crontab
+    fi
 }
 
 telegram_ip() {
@@ -544,10 +570,10 @@ telegram_ip() {
     read configure_via_telegram
 
     if [[ "$configure_via_telegram" == "y" ]]; then
-        echo -e "Enter your ${yellow}Telegram bot Token :${rest} \c"
+        echo -e "Enter your ${yellow}Telegram bot Token${rest} :\c"
         read token
 
-        echo -e "Enter Your ${yellow}chat ID ${rest} .${purple}(Get in: bot--> @userinfobot) :${rest} \c"
+        echo -e "Enter Your ${yellow}chat ID${rest}.${purple}(Get your Chat ID in: bot--> @userinfobot) ${rest}: \c"
         read chat_id
         display_progress 20
         echo "Please wait about 20s for connecting Argo tunnel..."
@@ -564,8 +590,11 @@ $(config_ip | grep -o 'hysteria2://.*#peyman-hy2')
 3⃣
 $(config_ip | grep -o 'vless://.*#peyman-vless-reality')
 
-4⃣ و 5️⃣
-$(config_ip | grep -o 'vmess://.*')"
+4⃣
+$(config_ip | grep -o 'vmess://.*' | head -n 1)
+
+5️⃣
+$(config_ip | grep -o 'vmess://.*' | tail -n 1)"
         
         response=$(curl -s "https://api.telegram.org/bot$token/sendMessage" \
             --data-urlencode "chat_id=$chat_id" \
@@ -586,7 +615,8 @@ config_tls() {
     display_progress 2
     sleep 1
     echo ""
-    
+    echo -e "${purple}--------------------These are your configs.----------------------${rest}"
+    echo ""
     tuic="tuic://$uuid:$uuid@$domain:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=$domain&allow_insecure=0#peyman-tuic5"
     echo "$tuic"
     echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
@@ -614,10 +644,10 @@ telegram_tls() {
     read configure_via_telegram
 
     if [[ "$configure_via_telegram" == "y" ]]; then
-        echo -e "Enter your ${yellow}Telegram bot Token :${rest} \c"
+        echo -e "Enter your ${yellow}Telegram bot Token${rest} :\c"
         read token
 
-        echo -e "Enter Your ${yellow}chat ID ${rest} .${purple}(Get in: bot--> @userinfobot) :${rest} \c"
+        echo -e "Enter Your ${yellow}chat ID${rest}.${purple}(Get your Chat ID in: bot--> @userinfobot) ${rest}: \c"
         read chat_id
         display_progress 20
         sleep 1
@@ -661,15 +691,14 @@ uninstall() {
 
     # Stop and disable the service
     sudo systemctl stop s-box.service
-    sudo systemctl disable s-box.service
+    sudo systemctl disable s-box.service >/dev/null 2>&1
 
     # Remove service file
-    sudo rm /etc/systemd/system/s-box.service
+    sudo rm /etc/systemd/system/s-box.service >/dev/null 2>&1
     sudo rm -rf /etc/s-box
     sudo rm -rf /root/peyman
     sudo systemctl reset-failed
-    crontab -r
-    echo "Uninstallation completed successfully."
+    echo "Uninstallation completed."
 }
 
 config-sing-box(){
