@@ -467,7 +467,7 @@ server_config() {
 "download_detour":"direct"
 },
 "geosite":{
-"download_url":"https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311180202/geosite.db",
+"download_url":"https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geosite.db",
 "download_detour":"direct"
 },
 "rules":[
