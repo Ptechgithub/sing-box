@@ -1003,6 +1003,7 @@ menu() {
 options() {
     clear
     echo -e "${purple}1)${rest} Show Argo Host"
+    echo -e "${purple}1)${rest} Change Vless SNI"
     echo -e "${red}0)${rest} Back to Menu"
     echo -e "${cyan}Enter your choice${rest} : \c"
     read choice
@@ -1010,6 +1011,9 @@ options() {
     case $choice in
         1)
             argo_host
+            ;;
+        2)
+            update_vless_sni
             ;;
         0)
             menu
@@ -1019,6 +1023,17 @@ options() {
             menu
             ;;
     esac
+}
+
+update_vless_sni() {
+    read -p "Enter the new SNI :" new_sni
+
+    sed -i "/\"type\": \"vless\"/,/\"type\":/s/\"server\": \".*\"/\"server\": \"$new_sni\"/" /etc/s-box/sb.json
+    sed -i "/\"type\": \"vless\"/,/\"type\":/s/\"server_name\": \".*\"/\"server_name\": \"$new_sni\"/" /etc/s-box/sb.json
+    sed -i "s/sni=[^\&]*/sni=$new_sni/" /root/peyman/configs/vless_config.txt
+    systemctl stop s-box.service
+    systemctl start s-box.service
+    echo "SNI updated successfully! to $new_sni"
 }
 
 argo_host() {
