@@ -463,7 +463,7 @@ server_config() {
 ],
 "route":{
 "geoip":{
-"download_url":"https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311170203/geoip.db",
+"download_url":"https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geoip.db",
 "download_detour":"direct"
 },
 "geosite":{
@@ -752,7 +752,7 @@ config-sing-box(){
                 "server": "local"
             },
             {
-                "geosite": "cn",
+                "geosite": "ir",
                 "server": "local"
             },
              {
@@ -944,15 +944,15 @@ config-sing-box(){
         "outbound": "select"
       },
       {
-        "geosite": "cn",
+        "geosite": "ir",
         "geoip": [
-          "cn",
+          "ir",
           "private"
         ],
         "outbound": "direct"
       },
       {
-        "geosite": "geolocation-!cn",
+        "geosite": "geolocation-!ir",
         "outbound": "select"
       }
     ]
