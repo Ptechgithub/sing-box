@@ -177,9 +177,9 @@ install_certs(){
                     echo $domain > /root/peyman/ca.log
                     sed -i '/--cron/d' /etc/crontab >/dev/null 2>&1
                     echo "0 0 * * * root bash /root/.acme.sh/acme.sh --cron -f >/dev/null 2>&1" >> /etc/crontab
-                    echo -e "${green}Successful! The certificate (cer.crt) and private key (private.key) files applied by the script have been saved in /root${rest}"
-                    echo -e "${yellow}The certificate crt file path: /root/peyman/cert.crt${rest}"
-                    echo -e "${yellow}The private key file path: /root/peyman/private.key${rest}"
+                    echo -e "${green}Successful! The certificate (cer.crt) and private key (private.key) saved in /root${rest}"
+                    echo -e "${green}The certificate crt file path: /root/peyman/cert.crt${rest}"
+                    echo -e "${green}The private key file path: /root/peyman/private.key${rest}"
                     chmod 777 /root/peyman/cert.crt
                     chmod 777 /root/peyman/private.key
                     chmod 777 /root/peyman/ca.log
