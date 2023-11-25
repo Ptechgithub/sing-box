@@ -9,6 +9,8 @@
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/sing-box/main/install.sh)
 ```
+- پس از نصب اگر روش اول یعنی Bing self-signed را انتخاب کنید 5 پروتکل به عنوان خروجی دریافت میکنید که مورد پنجم همان تانل Argo است.
+- پس از ریبوت شدن سرور host کانفیگ Argo تغییر میکند که میتواند از طریق منو ادرس جدید را بگیرید و در کانفیگ قبلی قرار دهید.
 
 
 #### کلاینت
