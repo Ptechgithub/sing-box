@@ -1025,6 +1025,7 @@ options() {
     esac
 }
 
+#change sni
 update_vless_sni() {
     read -p "Enter the new SNI :" new_sni
 
@@ -1036,6 +1037,7 @@ update_vless_sni() {
     echo "SNI updated successfully! to $new_sni"
 }
 
+#show new argo host after reboot server
 argo_host() {
     if [ -f "/etc/s-box/argo.log" ] && systemctl is-active --quiet s-box.service; then
         echo -e "${purple}Change your Argo Host to below link: ${rest}"
