@@ -1003,7 +1003,7 @@ menu() {
 options() {
     clear
     echo -e "${purple}1)${rest} Show Argo Host"
-    echo -e "${purple}1)${rest} Change Vless SNI"
+    echo -e "${purple}2)${rest} Change Vless SNI"
     echo -e "${red}0)${rest} Back to Menu"
     echo -e "${cyan}Enter your choice${rest} : \c"
     read choice
