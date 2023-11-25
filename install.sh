@@ -976,7 +976,7 @@ echo -e "${green} --------${rest}#-${purple} Sing-Box ${rest}-#${green}--------$
 echo -e "${purple}1)${rest} Install"
 echo -e "${purple}2)${rest} Uninstall"
 echo -e "${red}0)${rest} Exit"
-echo -e "${cyan}Enter your choice:${rest} \c"
+echo -e "${cyan}Enter your choice${rest} : \c"
 read choice
 
 case $choice in
