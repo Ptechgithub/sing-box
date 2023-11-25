@@ -969,27 +969,40 @@ EOL
 }
 
 # Main menu
-clear
-echo "By --> Peyman * Github.com/Ptechgithub * "
-echo ""
-echo -e "${green} --------${rest}#-${purple} Sing-Box ${rest}-#${green}--------${rest}"
-echo -e "${purple}1)${rest} Install"
-echo -e "${purple}2)${rest} Uninstall"
-echo -e "${red}0)${rest} Exit"
-echo -e "${cyan}Enter your choice${rest} : \c"
-read choice
+options() {
+    clear
+    echo -e "${purple}1)${rest} Show Argo Host"
+    echo -e "${purple}2)${rest} Change Ports"
+    echo -e "${red}0)${rest} Back to Menu"
+    echo -e "${cyan}Enter your choice${rest} : \c"
+    read choice
+    
+    case $choice in
+        1)
+            argo_host
+            ;;
+        2)
+           change_port
+            ;;
+        0)
+            menu
+            ;;
+        *)
+            echo "Invalid choice. Returning to the menu."
+            menu
+            ;;
+    esac
+}
 
-case $choice in
-    1)
-        install
-        ;;
-    2)
-        uninstall
-        ;;
-    0)
-        exit 0
-        ;;
-    *)
-        echo "Invalid choice. Please select a valid option."
-        ;;
-esac
+argo_host() {
+    if [ -f "/etc/s-box/argo.log" ] && systemctl is-active --quiet s-box.service; then
+        echo -e "${purple}Change your Argo Host to below link: ${rest}"
+        echo "---------------------------------------------"
+        echo -e "${yellow}$(grep -o 'https://.*trycloudflare.com' /etc/s-box/argo.log | sed 's/https:\/\///')${rest}"
+        echo "----------------------------------------------"
+    else
+        echo -e "${red}Error:${rest}The file '/etc/s-box/argo.log' doesn't exist or the service is not Installed"
+    fi
+}
+
+menu
