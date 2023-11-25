@@ -971,6 +971,7 @@ EOL
 # Main menu
 menu() {
     clear
+    echo "-- VLESS --VMESS --TUIC-- HYSTERIA2-- ARGO--"
     echo "By --> Peyman * Github.com/Ptechgithub * "
     echo ""
     echo -e "${green} --------${rest}#-${purple} Sing-Box ${rest}-#${green}--------${rest}"
