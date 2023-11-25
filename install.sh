@@ -1027,7 +1027,7 @@ options() {
 
 #change sni
 update_vless_sni() {
-    read -p "Enter the new SNI (use: www --> www.yahoo.com) :" new_sni
+    read -p "Enter the new SNI (use: www --> www.yahoo.com): " new_sni
 
     sed -i "/\"type\": \"vless\"/,/\"type\":/s/\"server\": \".*\"/\"server\": \"$new_sni\"/" /etc/s-box/sb.json
     sed -i "/\"type\": \"vless\"/,/\"type\":/s/\"server_name\": \".*\"/\"server_name\": \"$new_sni\"/" /etc/s-box/sb.json
