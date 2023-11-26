@@ -209,8 +209,19 @@ install_certs(){
 }
 
 #download sing-box
-download-sb(){
-    bash <(curl -fsSL https://sing-box.app/deb-install.sh)
+download-sb() {
+    if [ "$ID" == "ubuntu" ]; then
+        bash <(curl -fsSL https://sing-box.app/deb-install.sh)
+    elif [ "$ID" == "debian" ]; then
+        bash <(curl -fsSL https://sing-box.app/deb-install.sh)
+    elif [ "$ID" == "centos" ] || [ "$ID" == "redhat" ]; then
+        bash <(curl -fsSL https://sing-box.app/rpm-install.sh)
+    elif [ "$ID" == "arch" ]; then
+        bash <(curl -fsSL https://sing-box.app/arch-install.sh)
+    else
+        echo "Unsupported distribution!"
+        exit 1
+    fi
 }
 
 install() {
