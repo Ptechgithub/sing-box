@@ -29,3 +29,6 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/sing-box/main/in
 - Windows, Linux, macOS
   - [NekoRay](https://github.com/MatsuriDayo/nekoray/releases)
   - [Furious](https://github.com/LorenEteval/Furious/releases)
+  
+  
+  thanks : [yonggekkk](https://github.com/yonggekkk) for server config.
