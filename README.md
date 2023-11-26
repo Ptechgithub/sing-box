@@ -12,8 +12,9 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/sing-box/main/in
 ![9](https://raw.githubusercontent.com/Ptechgithub/configs/main/media/9.jpg)
 - پس از نصب اگر روش اول یعنی Bing self-signed را انتخاب کنید 5 پروتکل به عنوان خروجی دریافت میکنید که مورد پنجم همان تانل Argo است.
 - پس از ریبوت شدن سرور host کانفیگ Argo تغییر میکند که میتواند از طریق منو ادرس جدید را بگیرید و در کانفیگ قبلی قرار دهید.
-
-
+- فایل config-sing-box.json در مسیر /etc/peyman/configs قرار دارد که میتونید روی خود نرم افزار sing-box استفاده کنید.
+- ![10](https://raw.githubusercontent.com/Ptechgithub/configs/main/media/10.jpg)
+- 
 ### Clients
 - Android
   - [v2rayNG](https://github.com/2dust/v2rayNg/releases)
