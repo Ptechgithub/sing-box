@@ -929,11 +929,11 @@ config-sing-box(){
   ],
   "route": {
       "geoip": {
-      "download_url": "https://cdn.jsdelivr.net/gh/soffchen/sing-geoip@release/geoip.db",
+      "download_url": "https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geoip.db",
       "download_detour": "select"
     },
     "geosite": {
-      "download_url": "https://cdn.jsdelivr.net/gh/soffchen/sing-geosite@release/geosite.db",
+      "download_url": "https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geosite.db",
       "download_detour": "select"
     },
     "auto_detect_interface": true,
