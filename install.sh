@@ -284,8 +284,7 @@ install() {
     fi
     server_config
     config-sing-box
-    sed -i '/sing-box/d' /etc/crontab >/dev/null 2>&1
-    echo "0 1 * * * systemctl restart sing-box >/dev/null 2>&1" >> /etc/crontab
+    (crontab -l ; echo "0 1 * * * systemctl restart sing-box >/dev/null 2>&1") | sort - | uniq - | crontab -
     if [[ $certInput == 2 ]]; then
         telegram_tls
         setup_service
