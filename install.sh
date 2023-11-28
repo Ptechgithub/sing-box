@@ -538,6 +538,29 @@ config_ip() {
     
     if [ $seconds_waited -ge $max_wait_seconds ]; then
         echo "Argo Can't run."
+        echo ""
+        echo -e "${purple}--------------------These are your configs.----------------------${rest}"
+        echo ""
+        tuic="tuic://$uuid:$uuid@$ip:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=www.bing.com&allow_insecure=1#peyman-tuic5"
+        echo "$tuic"
+        echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
+        
+        hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com#peyman-hy2"
+        echo "$hysteria2"
+        echo "$hysteria2" > "/root/peyman/configs/hysteria2_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
+
+        vless="vless://$uuid@$ip:$vlessport?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.yahoo.com&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#peyman-vless-reality"
+        echo "$vless"
+        echo "$vless" > "/root/peyman/configs/vless_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
+
+        vmess="{\"add\":\"$ip\",\"aid\":\"0\",\"host\":\"www.bing.com\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"$vmessport\",\"ps\":\"peyman-ws\",\"tls\":\"\",\"type\":\"none\",\"v\":\"2\"}"
+        encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
+        echo "vmess://$encoded_vmess"
+        echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
+        echo -e "${purple}----------------------------------------------------------------${rest}"
     else
         link=$(grep -o 'https://.*trycloudflare.com' /etc/s-box/argo.log | sed 's/https:\/\///')
         echo ""
