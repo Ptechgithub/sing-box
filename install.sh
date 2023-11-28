@@ -571,8 +571,8 @@ config_ip() {
         echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_Argo_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
         
-        sed -i '/--edgeip/d' /etc/crontab >/dev/null 2>&1
-        echo "@reboot /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edgeip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1" >> /etc/crontab
+        sed -i '/--edge-ip/d' /etc/crontab >/dev/null 2>&1
+        echo "@reboot /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /dev/null 2>&1" >> /etc/crontab
     fi
 }
 
