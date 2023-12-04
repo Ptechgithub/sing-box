@@ -184,9 +184,16 @@ install_certs(){
                     chmod 777 /root/peyman/private.key
                     chmod 777 /root/peyman/ca.log
                     hy_domain=$domain
+                    read -rp "Do you want to use a subdomain with CDN [ON] for configs with TLS? Enter a subdomain or Press Enter to skip :" subdomain
+                    if [[ -n $subdomain ]]; then
+                      domain_cdn=$subdomain
+                     echo -e "${green}Sub domain name entered: $domain_cdn${rest}" && sleep 1
+                   else
+                       domain_cdn=$domain
+                    fi
                 fi
             else
-                red "The IP resolved by the current domain name does not match the real IP used by the current VPS"
+                echo -e "${red}The IP resolved by the current domain name does not match the real IP used by the current VPS${rest}"
                 echo -e "${green}uggestions below :${rest}"
                 echo -e "${yellow}1. Please make sure that CloudFlare is turned off (DNS only). The same applies to other domain name resolution or CDN website settings.${rest}"
                 echo -e "${yellow}2. Please check whether the IP set by DNS resolution is the real IP of the VPS${rest}"
@@ -245,6 +252,7 @@ install() {
     randomPort=${randomPort:-"y"}
     if [ "$randomPort" == "y" ]; then
         vlessport=$(shuf -i 2000-65535 -n 1)
+        vlessgport=${vlessgport:-2083}
         vmessport=${vmessport:-443}
         hyport=$(shuf -i 2000-65535 -n 1)
         tuicport=$(shuf -i 2000-65535 -n 1)
@@ -256,6 +264,14 @@ install() {
             echo -e "${red}Error: Port $vlessport is already in use.${rest}"
             read -p "Enter a different VLESS port: " vlessport
             vlessport=${vlessport:-2087}
+        done
+        
+        read -p "Enter VLESS_GRPC port [default: 2083]: " vlessgport
+        vlessgport=${vlessgport:-2083}
+        while lsof -Pi :$vlessgport -sTCP:LISTEN -t >/dev/null ; do
+            echo -e "${red}Error: Port $vlessgport is already in use.${rest}"
+            read -p "Enter a different VLESS port: " vlessgport
+            vlessgport=${vlessgport:-2083}
         done
 
         read -p "Enter VMESS port [default: 443]: " vmessport
@@ -307,7 +323,7 @@ server_config() {
   "inbounds": [
     {
       "type": "vless",
-      "tag": "vless-sb",
+      "tag": "vless-tcp-reality",
       "sniff": true,
       "sniff_override_destination": true,      
       "listen": "::",
@@ -333,6 +349,31 @@ server_config() {
       }
     },
 {
+            "type": "vless",
+            "tag": "vless-grpc",
+            "sniff": true,
+            "sniff_override_destination": true,
+            "listen": "::",
+            "listen_port": $vlessgport,
+            "users": [
+                {
+                    "uuid": "$uuid"
+                }
+            ],
+            "transport": {
+                "type": "grpc",
+                "service_name": "$domain_cdn"
+            },
+            "tls":{
+                "enabled": true,
+                "server_name": "$domain_cdn",
+                "min_version": "1.2",
+                "max_version": "1.3",
+                "certificate_path": "/root/peyman/cert.crt",
+                "key_path": "/root/peyman/private.key"
+            }
+        },
+{
         "type": "vmess",
         "tag": "vmess-sb",
         "sniff": true,
@@ -351,7 +392,7 @@ server_config() {
         },
         "tls":{
                 "enabled": $tf,
-                "server_name": "$domain",
+                "server_name": "$domain_cdn",
                 "min_version": "1.2",
                 "max_version": "1.3",
                 "certificate_path": "/root/peyman/cert.crt",
@@ -663,8 +704,14 @@ config_tls() {
     echo "$vless"
     echo "$vless" > "/root/peyman/configs/vless_config.txt"
     echo -e "${purple}----------------------------------------------------------------${rest}"
+
+    vlessg="vless://$uuid@$domain_cdn:$vlessgport/?type=grpc&encryption=none&serviceName=$domain_cdn&security=tls&sni=$domain_cdn&alpn=h2&fp=chrome#peyman-Vless-GRPC-Tls"
+    echo "$vlessg"
+    echo "$vlessg" > "/root/peyman/configs/vless_grpc_config.txt"
+    echo -e "${purple}----------------------------------------------------------------${rest}"
+
     
-    vmess='{"add":"'$domain'","aid":"0","host":"'$domain'","id":"'$uuid'","net":"ws","path":"'$uuid'","port":"'$vmessport'","ps":"peyman-ws-tls","tls":"tls","sni":"'$domain'","type":"none","v":"2"}'
+    vmess='{"add":"'$domain_cdn'","aid":"0","host":"'$domain_cdn'","id":"'$uuid'","net":"ws","path":"'$uuid'","port":"'$vmessport'","ps":"peyman-ws-tls","tls":"tls","sni":"'$domain_cdn'","type":"none","v":"2"}'
     encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
     echo "vmess://$encoded_vmess"
     echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
@@ -697,7 +744,10 @@ $(config_tls | grep -o 'hysteria2://.*#peyman-hy2')
 $(config_tls | grep -o 'vless://.*#peyman-vless-reality')
 
 4⃣
-$(config_tls | grep -o 'vmess://.*')"
+$(config_tls | grep -o 'vmess://.*')
+
+5️⃣
+$(config_tls | grep -o 'vless://.*' | tail -n 1)"
         
         response=$(curl -s "https://api.telegram.org/bot$token/sendMessage" \
             --data-urlencode "chat_id=$chat_id" \
@@ -832,7 +882,8 @@ config-sing-box(){
       "default": "auto",
       "outbounds": [
         "auto",
-        "vless-sb",
+        "vless-tcp-reality",
+        "vless-grpc",
         "vmess-sb",
         "hy2-sb",
         "tuic5-sb"
@@ -840,7 +891,7 @@ config-sing-box(){
     },
     {
       "type": "vless",
-      "tag": "vless-sb",
+      "tag": "vless-tcp-reality",
       "server": "$domain",
       "server_port": $vlessport,
       "uuid": "$uuid",
@@ -859,6 +910,26 @@ config-sing-box(){
         }
       }
     },
+    {
+    "type": "vless",
+    "tag": "vless-grpc",
+    "server": "$domain_cdn",
+    "server_port": $vlessgport,
+    "uuid": "$uuid",
+    "tls": {
+        "enabled": true,
+        "server_name": "$domin_cdn",
+        "utls": {
+            "enabled": true,
+            "fingerprint": "chrome"
+        }
+    },
+    "packet_encoding": "xudp",
+    "transport": {
+        "type": "grpc",
+        "service_name": "$domain_cdn"
+    }
+},
 {
             "type": "vmess",
             "tag": "vmess-sb",
@@ -866,7 +937,7 @@ config-sing-box(){
             "server_port": $vmessport,
             "tls": {
                 "enabled": $tf,
-                "server_name": "$domain",
+                "server_name": "$domain_cdn",
                 "insecure": $tf,
                 "utls": {
                     "enabled": true,
@@ -876,7 +947,7 @@ config-sing-box(){
             "transport": {
                 "headers": {
                     "Host": [
-                        "$domain"
+                        "$domain_cdn"
                     ]
                 },
                 "path": "$uuid",
@@ -937,7 +1008,8 @@ config-sing-box(){
       "tag": "auto",
       "type": "urltest",
       "outbounds": [
-        "vless-sb",
+        "vless-tcp-reality",
+        "vless-grpc",
         "vmess-sb",
         "hy2-sb",
         "tuic5-sb"
