@@ -1,5 +1,6 @@
-# sing-box 5 protocol 
-- vless reality
+# sing-box 6 protocol 
+- vless tcp reality
+- vless grpc tls
 - vmess ws +Argo tunnel
 - vmess ws
 - Hysteria2
