@@ -306,10 +306,10 @@ install() {
         setup_service
         config_tls
       else
-        config-sing-boxx
         telegram_ip
         setup_service
         config_ip
+        config-sing-boxx
     fi
 }
 
@@ -1213,6 +1213,7 @@ config-sing-boxx(){
         "auto",
         "vless-tcp-reality",
         "vmess-sb",
+        "vmess-Grpc",
         "hy2-sb",
         "tuic5-sb"
       ]
@@ -1244,9 +1245,9 @@ config-sing-boxx(){
         "server": "$domain",
         "server_port": $vmessport,
         "tls": {
-            "enabled": $tf,
+            "enabled": false,
             "server_name": "$domain",
-            "insecure": $tf,
+            "insecure": true,
             "utls": {
                 "enabled": true,
                 "fingerprint": "chrome"
@@ -1256,6 +1257,32 @@ config-sing-boxx(){
             "headers": {
                 "Host": [
                     "$domain"
+                ]
+            },
+            "path": "$uuid",
+            "type": "ws"
+        },
+        "security": "auto",
+        "uuid": "$uuid"
+    },
+    {
+        "type": "vmess",
+        "tag": "vmess-Grpc",
+        "server": "www.visa.com",
+        "server_port": 443,
+        "tls": {
+            "enabled": true,
+            "server_name": "$link",
+            "insecure": false,
+            "utls": {
+                "enabled": true,
+                "fingerprint": "chrome"
+            }
+        },
+        "transport": {
+            "headers": {
+                "Host": [
+                    "$link"
                 ]
             },
             "path": "$uuid",
@@ -1318,6 +1345,7 @@ config-sing-boxx(){
       "outbounds": [
         "vless-tcp-reality",
         "vmess-sb",
+        "vmess-Grpc",
         "hy2-sb",
         "tuic5-sb"
       ],
