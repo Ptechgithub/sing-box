@@ -515,11 +515,11 @@ server_config() {
 ],
 "route":{
 "geoip":{
-"download_url":"https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geoip.db",
+"download_url":"https://raw.githubusercontent.com/Ptechgithub/sing-box/main/geo/geoip.db",
 "download_detour":"direct"
 },
 "geosite":{
-"download_url":"https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geosite.db",
+"download_url":"https://raw.githubusercontent.com/Ptechgithub/sing-box/main/geo/geosite.db",
 "download_detour":"direct"
 },
 "rules":[
@@ -1064,11 +1064,11 @@ config-sing-box(){
   ],
   "route": {
       "geoip": {
-      "download_url": "https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geoip.db",
+      "download_url": "https://raw.githubusercontent.com/Ptechgithub/sing-box/main/geo/geoip.db",
       "download_detour": "select"
     },
     "geosite": {
-      "download_url": "https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geosite.db",
+      "download_url": "https://raw.githubusercontent.com/Ptechgithub/sing-box/main/geo/geosite.db",
       "download_detour": "select"
     },
     "auto_detect_interface": true,
@@ -1332,11 +1332,11 @@ config-sing-boxx(){
   ],
   "route": {
       "geoip": {
-      "download_url": "https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geoip.db",
+      "download_url": "https://raw.githubusercontent.com/Ptechgithub/sing-box/main/geo/geoip.db",
       "download_detour": "select"
     },
     "geosite": {
-      "download_url": "https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geosite.db",
+      "download_url": "https://raw.githubusercontent.com/Ptechgithub/sing-box/main/geo/geosite.db",
       "download_detour": "select"
     },
     "auto_detect_interface": true,
