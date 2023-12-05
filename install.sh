@@ -253,7 +253,7 @@ install() {
     if [ "$randomPort" == "y" ]; then
         vlessport=$(shuf -i 2000-65535 -n 1)
         vlessgport=${vlessgport:-2083}
-        vmessport=${vmessport:-443}
+        vmessport=${vmessport:-2053}
         hyport=$(shuf -i 2000-65535 -n 1)
         tuicport=$(shuf -i 2000-65535 -n 1)
         
@@ -274,12 +274,12 @@ install() {
             vlessgport=${vlessgport:-2083}
         done
 
-        read -p "Enter VMESS port [default: 443]: " vmessport
-        vmessport=${vmessport:-443}
+        read -p "Enter VMESS port [default: 2053]: " vmessport
+        vmessport=${vmessport:-2053}
         while lsof -Pi :$vmessport -sTCP:LISTEN -t >/dev/null ; do
             echo -e "${red}Error: Port $vmessport is already in use.${rest}"
             read -p "Enter a different VMESS port: " vmessport
-            vmessport=${vmessport:-443}
+            vmessport=${vmessport:-2053}
         done
 
         read -p "Enter HYSTERIA port [default: 2096]: " hyport
@@ -349,6 +349,32 @@ server_config() {
         }
       }
     },
+    {
+        "type": "vmess",
+        "tag": "vmess-sb",
+        "sniff": true,
+        "sniff_override_destination": true,
+        "listen": "::",
+        "listen_port": $vmessport,
+        "users": [
+            {
+                "uuid": "$uuid",
+                "alterId": 0
+            }
+        ],
+        "transport": {
+            "type": "ws",
+            "path": "$uuid"
+        },
+        "tls":{
+                "enabled": $tf,
+                "server_name": "$domain_cdn",
+                "min_version": "1.2",
+                "max_version": "1.3",
+                "certificate_path": "/root/peyman/cert.crt",
+                "key_path": "/root/peyman/private.key"
+            }
+    },
 {
             "type": "vless",
             "tag": "vless-grpc",
@@ -374,32 +400,6 @@ server_config() {
                 "key_path": "/root/peyman/private.key"
             }
         },
-{
-        "type": "vmess",
-        "tag": "vmess-sb",
-        "sniff": true,
-        "sniff_override_destination": true,
-        "listen": "::",
-        "listen_port": $vmessport,
-        "users": [
-            {
-                "uuid": "$uuid",
-                "alterId": 0
-            }
-        ],
-        "transport": {
-            "type": "ws",
-            "path": "$uuid"
-        },
-        "tls":{
-                "enabled": $tf,
-                "server_name": "$domain_cdn",
-                "min_version": "1.2",
-                "max_version": "1.3",
-                "certificate_path": "/root/peyman/cert.crt",
-                "key_path": "/root/peyman/private.key"
-            }
-    }, 
     {
         "type": "hysteria2",
         "tag": "hy2-sb",
@@ -653,7 +653,7 @@ config_ip() {
         echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
 
-        vmess="{\"add\":\"www.wto.org\",\"aid\":\"0\",\"host\":\"$link\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"443\",\"ps\":\"peyman-vmess-Argo\",\"tls\":\"tls\",\"sni\":\"$link\",\"type\":\"none\",\"v\":\"2\"}"
+        vmess="{\"add\":\"www.visa.com\",\"aid\":\"0\",\"host\":\"$link\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"443\",\"ps\":\"peyman-vmess-Argo\",\"tls\":\"tls\",\"sni\":\"$link\",\"type\":\"none\",\"v\":\"2\"}"
         encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
         echo "vmess://$encoded_vmess"
         echo ""
