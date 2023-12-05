@@ -1215,7 +1215,6 @@ config-sing-boxx(){
       "outbounds": [
         "auto",
         "vless-tcp-reality",
-        "vless-grpc",
         "vmess-sb",
         "hy2-sb",
         "tuic5-sb"
@@ -1321,7 +1320,6 @@ config-sing-boxx(){
       "type": "urltest",
       "outbounds": [
         "vless-tcp-reality",
-        "vless-grpc",
         "vmess-sb",
         "hy2-sb",
         "tuic5-sb"
