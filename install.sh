@@ -1064,11 +1064,11 @@ config-sing-box(){
   ],
   "route": {
       "geoip": {
-      "download_url": "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.db",
+      "download_url": "https://mirror.ghproxy.com/https://github.com/Ptechgithub/sing-box/blob/main/geo/geoip.db",
       "download_detour": "select"
     },
     "geosite": {
-      "download_url": "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.db",
+      "download_url": "https://mirror.ghproxy.com/https://github.com/Ptechgithub/sing-box/blob/main/geo/geosite.db",
       "download_detour": "select"
     },
     "auto_detect_interface": true,
@@ -1329,11 +1329,11 @@ config-sing-boxx(){
   ],
   "route": {
       "geoip": {
-      "download_url": "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.db",
+      "download_url": "https://mirror.ghproxy.com/https://github.com/Ptechgithub/sing-box/blob/main/geo/geoip.db",
       "download_detour": "select"
     },
     "geosite": {
-      "download_url": "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.db",
+      "download_url": "https://mirror.ghproxy.com/https://github.com/Ptechgithub/sing-box/blob/main/geo/geosite.db",
       "download_detour": "select"
     },
     "auto_detect_interface": true,
