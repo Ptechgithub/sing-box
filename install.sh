@@ -1245,7 +1245,7 @@ config-sing-boxx(){
         "server_port": $vmessport,
         "tls": {
             "enabled": $tf,
-            "server_name": "$domain_cdn",
+            "server_name": "$domain",
             "insecure": $tf,
             "utls": {
                 "enabled": true,
@@ -1255,7 +1255,7 @@ config-sing-boxx(){
         "transport": {
             "headers": {
                 "Host": [
-                    "$domain_cdn"
+                    "$domain"
                 ]
             },
             "path": "$uuid",
