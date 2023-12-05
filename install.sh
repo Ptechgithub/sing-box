@@ -837,14 +837,12 @@ config-sing-box(){
         "servers": [
             {
                 "tag": "remote",
-                "address": "https://8.8.8.8/dns-query",
-                "strategy": "ipv4_only",
+                "address": "https://8.8.8.8/dns-query",             
                 "detour": "select"
             },
             {
                 "tag": "local",
-                "address": "https://223.5.5.5/dns-query",
-                "strategy": "ipv4_only",
+                "address": "h3://223.5.5.5/dns-query",
                 "detour": "direct"
             },
             {
@@ -853,19 +851,14 @@ config-sing-box(){
             },
             {
                 "tag": "dns_fakeip",
-                "strategy": "ipv4_only",
                 "address": "fakeip"
             }
         ],
         "rules": [
             {
                 "outbound": "any",
-                "server": "local"
-            },
-            {
-                "disable_cache": true,
-                "geosite": "category-ads-all",
-                "server": "block"
+                "server": "local",
+                "disable_cache": true
             },
             {
                 "clash_mode": "Global",
@@ -879,12 +872,17 @@ config-sing-box(){
                 "geosite": "ir",
                 "server": "local"
             },
+            {
+                "geosite": "geolocation-!ir",
+                "server": "remote"
+            },
              {
-               "query_type": [
-                "A",
-                "AAAA"
-               ],
-              "server": "dns_fakeip"
+                "geosite": "geolocation-!ir",             
+                "query_type": [
+                    "A",
+                    "AAAA"
+                ],
+                "server": "dns_fakeip"
             }
           ],
            "fakeip": {
@@ -892,15 +890,17 @@ config-sing-box(){
            "inet4_range": "198.18.0.0/15",
            "inet6_range": "fc00::/18"
          },
-          "independent_cache": true
+          "independent_cache": true,
+          "final": "remote"
         },
       "inbounds": [
     {
       "type": "tun",
       "inet4_address": "172.19.0.1/30",
-      "inet6_address": "fdfe:dcba:9876::1/126",
+      //"inet6_address": "fdfe:dcba:9876::1/126",
       "auto_route": true,
       "strict_route": true,
+      "stack": "mixed",
       "sniff": true
     }
   ],
@@ -973,31 +973,31 @@ config-sing-box(){
     }
 },
 {
-            "type": "vmess",
-            "tag": "vmess-sb",
-            "server": "$domain",
-            "server_port": $vmessport,
-            "tls": {
-                "enabled": $tf,
-                "server_name": "$domain_cdn",
-                "insecure": $tf,
-                "utls": {
-                    "enabled": true,
-                    "fingerprint": "chrome"
-                }
-            },
-            "transport": {
-                "headers": {
-                    "Host": [
-                        "$domain_cdn"
-                    ]
-                },
-                "path": "$uuid",
-                "type": "ws"
-            },
-            "security": "auto",
-            "uuid": "$uuid"
+        "type": "vmess",
+        "tag": "vmess-sb",
+        "server": "$domain",
+        "server_port": $vmessport,
+        "tls": {
+            "enabled": $tf,
+            "server_name": "$domain_cdn",
+            "insecure": $tf,
+            "utls": {
+                "enabled": true,
+                "fingerprint": "chrome"
+            }
         },
+        "transport": {
+            "headers": {
+                "Host": [
+                    "$domain_cdn"
+                ]
+            },
+            "path": "$uuid",
+            "type": "ws"
+        },
+        "security": "auto",
+        "uuid": "$uuid"
+    },
     {
         "type": "hysteria2",
         "tag": "hy2-sb",
@@ -1064,19 +1064,16 @@ config-sing-box(){
   ],
   "route": {
       "geoip": {
-      "download_url": "https://github.com/Ptechgithub/sing-box/blob/main/geo/geoip.db",
+      "download_url": "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.db",
       "download_detour": "select"
     },
     "geosite": {
-      "download_url": "https://github.com/Ptechgithub/sing-box/blob/main/geo/geosite.db",
+      "download_url": "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.db",
       "download_detour": "select"
     },
     "auto_detect_interface": true,
+    "final": "select",
     "rules": [
-      {
-        "geosite": "category-ads-all",
-        "outbound": "block"
-      },
       {
         "outbound": "dns-out",
         "protocol": "dns"
@@ -1127,14 +1124,12 @@ config-sing-boxx(){
         "servers": [
             {
                 "tag": "remote",
-                "address": "https://8.8.8.8/dns-query",
-                "strategy": "ipv4_only",
+                "address": "https://8.8.8.8/dns-query",             
                 "detour": "select"
             },
             {
                 "tag": "local",
-                "address": "https://223.5.5.5/dns-query",
-                "strategy": "ipv4_only",
+                "address": "h3://223.5.5.5/dns-query",
                 "detour": "direct"
             },
             {
@@ -1143,19 +1138,14 @@ config-sing-boxx(){
             },
             {
                 "tag": "dns_fakeip",
-                "strategy": "ipv4_only",
                 "address": "fakeip"
             }
         ],
         "rules": [
             {
                 "outbound": "any",
-                "server": "local"
-            },
-            {
-                "disable_cache": true,
-                "geosite": "category-ads-all",
-                "server": "block"
+                "server": "local",
+                "disable_cache": true
             },
             {
                 "clash_mode": "Global",
@@ -1169,12 +1159,17 @@ config-sing-boxx(){
                 "geosite": "ir",
                 "server": "local"
             },
+            {
+                "geosite": "geolocation-!ir",
+                "server": "remote"
+            },
              {
-               "query_type": [
-                "A",
-                "AAAA"
-               ],
-              "server": "dns_fakeip"
+                "geosite": "geolocation-!ir",             
+                "query_type": [
+                    "A",
+                    "AAAA"
+                ],
+                "server": "dns_fakeip"
             }
           ],
            "fakeip": {
@@ -1182,15 +1177,17 @@ config-sing-boxx(){
            "inet4_range": "198.18.0.0/15",
            "inet6_range": "fc00::/18"
          },
-          "independent_cache": true
+          "independent_cache": true,
+          "final": "remote"
         },
       "inbounds": [
     {
       "type": "tun",
       "inet4_address": "172.19.0.1/30",
-      "inet6_address": "fdfe:dcba:9876::1/126",
+      //"inet6_address": "fdfe:dcba:9876::1/126",
       "auto_route": true,
       "strict_route": true,
+      "stack": "mixed",
       "sniff": true
     }
   ],
@@ -1242,31 +1239,31 @@ config-sing-boxx(){
       }
     },
 {
-            "type": "vmess",
-            "tag": "vmess-sb",
-            "server": "$domain",
-            "server_port": $vmessport,
-            "tls": {
-                "enabled": $tf,
-                "server_name": "$domain_cdn",
-                "insecure": $tf,
-                "utls": {
-                    "enabled": true,
-                    "fingerprint": "chrome"
-                }
-            },
-            "transport": {
-                "headers": {
-                    "Host": [
-                        "$domain_cdn"
-                    ]
-                },
-                "path": "$uuid",
-                "type": "ws"
-            },
-            "security": "auto",
-            "uuid": "$uuid"
+        "type": "vmess",
+        "tag": "vmess-sb",
+        "server": "$domain",
+        "server_port": $vmessport,
+        "tls": {
+            "enabled": $tf,
+            "server_name": "$domain_cdn",
+            "insecure": $tf,
+            "utls": {
+                "enabled": true,
+                "fingerprint": "chrome"
+            }
         },
+        "transport": {
+            "headers": {
+                "Host": [
+                    "$domain_cdn"
+                ]
+            },
+            "path": "$uuid",
+            "type": "ws"
+        },
+        "security": "auto",
+        "uuid": "$uuid"
+    },
     {
         "type": "hysteria2",
         "tag": "hy2-sb",
@@ -1332,19 +1329,16 @@ config-sing-boxx(){
   ],
   "route": {
       "geoip": {
-      "download_url": "https://github.com/Ptechgithub/sing-box/blob/main/geo/geoip.db",
+      "download_url": "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.db",
       "download_detour": "select"
     },
     "geosite": {
-      "download_url": "https://github.com/Ptechgithub/sing-box/blob/main/geo/geosite.db",
+      "download_url": "https://mirror.ghproxy.com/https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.db",
       "download_detour": "select"
     },
     "auto_detect_interface": true,
+    "final": "select",
     "rules": [
-      {
-        "geosite": "category-ads-all",
-        "outbound": "block"
-      },
       {
         "outbound": "dns-out",
         "protocol": "dns"
