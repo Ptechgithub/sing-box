@@ -39,3 +39,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/sing-box/main/in
   .
   
   thanks : [yonggekkk](https://github.com/yonggekkk) for server config.
+
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/Ptechgithub/sing-box.svg)](https://starchart.cc/Ptechgithub/sing-box)
