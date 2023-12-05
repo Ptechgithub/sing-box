@@ -211,6 +211,7 @@ install_certs(){
         chmod 777 /root/peyman/private.key
         hy_domain="www.bing.com"
         domain="$ip"
+        domain_cdn="$ip"
         tf="false"
     fi
 }
@@ -804,7 +805,6 @@ $(config_tls | grep -o 'vless://.*' | tail -n 1)"
         show_output=$(config_tls)
     fi
 }
-
 
 uninstall() {
     # Check if the service is installed
