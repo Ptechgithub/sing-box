@@ -585,6 +585,7 @@ config_ip() {
         tuic="tuic://$uuid:$uuid@$ip:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=www.bing.com&allow_insecure=1#peyman-tuic5"
         echo "$tuic"
         echo ""
+        echo -e "${purple}---------------------------------TUIC5-------------------------------${rest}"
         echo "$tuic" | qrencode -t ANSIUTF8
         echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -592,6 +593,7 @@ config_ip() {
         hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com#peyman-hy2"
         echo "$hysteria2"
         echo ""
+        echo -e "${purple}-------------------------------HYSTERIA2-----------------------------${rest}"
         echo "$hysteria2" | qrencode -t ANSIUTF8
         echo "$hysteria2" > "/root/peyman/configs/hysteria2_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -599,6 +601,7 @@ config_ip() {
         vless="vless://$uuid@$ip:$vlessport?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.yahoo.com&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#peyman-vless-reality"
         echo "$vless"
         echo ""
+        echo -e "${purple}----------------------------VlESS-TCP-REALITY------------------------${rest}"
         echo "$vless" | qrencode -t ANSIUTF8
         echo "$vless" > "/root/peyman/configs/vless_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -607,6 +610,7 @@ config_ip() {
         encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
         echo "vmess://$encoded_vmess"
         echo ""
+        echo -e "${purple}--------------------------------VMESS-WS----------------------------${rest}"
         echo "$vmess://$encoded_vmess" | qrencode -t ANSIUTF8
         echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -618,6 +622,7 @@ config_ip() {
         tuic="tuic://$uuid:$uuid@$ip:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=www.bing.com&allow_insecure=1#peyman-tuic5"
         echo "$tuic"
         echo ""
+        echo -e "${purple}---------------------------------TUIC5-------------------------------${rest}"
         echo "$tuic" | qrencode -t ANSIUTF8
         echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -625,6 +630,7 @@ config_ip() {
         hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com#peyman-hy2"
         echo "$hysteria2"
         echo ""
+        echo -e "${purple}-------------------------------HYSTERIA2-----------------------------${rest}"
         echo "$hysteria2" | qrencode -t ANSIUTF8
         echo "$hysteria2" > "/root/peyman/configs/hysteria2_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -632,6 +638,7 @@ config_ip() {
         vless="vless://$uuid@$ip:$vlessport?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.yahoo.com&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#peyman-vless-reality"
         echo "$vless"
         echo ""
+        echo -e "${purple}----------------------------VlESS-TCP-REALITY------------------------${rest}"
         echo "$vless" | qrencode -t ANSIUTF8
         echo "$vless" > "/root/peyman/configs/vless_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -640,6 +647,7 @@ config_ip() {
         encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
         echo "vmess://$encoded_vmess"
         echo ""
+        echo -e "${purple}----------------------------------VMESS-WS------------------------------${rest}"
         echo "$vmess://$encoded_vmess" | qrencode -t ANSIUTF8
         echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -648,6 +656,7 @@ config_ip() {
         encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
         echo "vmess://$encoded_vmess"
         echo ""
+        echo -e "${purple}-------------------------VMESS-WS-TLS+ARGO-TUNNEL------------------${rest}"
         echo "$vmess://$encoded_vmess" | qrencode -t ANSIUTF8
         echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_Argo_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -708,6 +717,7 @@ config_tls() {
     echo ""
     echo -e "${purple}--------------------These are your configs.----------------------${rest}"
     echo ""
+    echo -e "${purple}---------------------------------TUIC5-------------------------------${rest}"
     tuic="tuic://$uuid:$uuid@$domain:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=$domain&allow_insecure=0#peyman-tuic5"
     echo "$tuic"
     echo ""
@@ -718,6 +728,7 @@ config_tls() {
     hysteria2="hysteria2://$uuid@$domain:$hyport?insecure=0&mport=$hyport&sni=$domain#peyman-hy2"
     echo "$hysteria2"
     echo ""
+    echo -e "${purple}-------------------------------HYSTERIA2-----------------------------${rest}"
     echo "$hysteria2" | qrencode -t ANSIUTF8
     echo "$hysteria2" > "/root/peyman/configs/hysteria2_config.txt"
     echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -725,6 +736,7 @@ config_tls() {
     vless="vless://$uuid@$domain:$vlessport?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.yahoo.com&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#peyman-vless-reality"
     echo "$vless"
     echo ""
+    echo -e "${purple}----------------------------VlESS-TCP-REALITY------------------------${rest}"
     echo "$vless" | qrencode -t ANSIUTF8
     echo "$vless" > "/root/peyman/configs/vless_config.txt"
     echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -732,6 +744,7 @@ config_tls() {
     vlessg="vless://$uuid@$domain_cdn:$vlessgport/?type=grpc&encryption=none&serviceName=$domain_cdn&security=tls&sni=$domain_cdn&alpn=h2&fp=chrome#peyman-Vless-GRPC-Tls"
     echo "$vlessg"
     echo ""
+    echo -e "${purple}---------------------------------VLESS-GRPC-TLS-----------------------------${rest}"
     echo "$vlessg" | qrencode -t ANSIUTF8
     echo "$vlessg" > "/root/peyman/configs/vless_grpc_config.txt"
     echo -e "${purple}----------------------------------------------------------------${rest}"
@@ -741,6 +754,7 @@ config_tls() {
     encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
     echo "vmess://$encoded_vmess"
     echo ""
+    echo -e "${purple}--------------------------------VMESS-WS-TLS----------------------------${rest}"
     echo "$vmess://$encoded_vmess" | qrencode -t ANSIUTF8
     echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
     echo -e "${purple}----------------------------------------------------------------${rest}"
