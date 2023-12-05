@@ -211,7 +211,6 @@ install_certs(){
         chmod 777 /root/peyman/private.key
         hy_domain="www.bing.com"
         domain="$ip"
-        domain_cdn="$ip"
         tf="false"
     fi
 }
@@ -300,13 +299,14 @@ install() {
         done
     fi
     server_config
-    config-sing-box
     (crontab -l ; echo "0 1 * * * systemctl restart sing-box >/dev/null 2>&1") | sort - | uniq - | crontab -
     if [[ $certInput == 2 ]]; then
+        config-sing-box
         telegram_tls
         setup_service
         config_tls
       else
+        config-sing-boxx
         telegram_ip
         setup_service
         config_ip
@@ -972,6 +972,276 @@ config-sing-box(){
         "service_name": "$domain_cdn"
     }
 },
+{
+            "type": "vmess",
+            "tag": "vmess-sb",
+            "server": "$domain",
+            "server_port": $vmessport,
+            "tls": {
+                "enabled": $tf,
+                "server_name": "$domain_cdn",
+                "insecure": $tf,
+                "utls": {
+                    "enabled": true,
+                    "fingerprint": "chrome"
+                }
+            },
+            "transport": {
+                "headers": {
+                    "Host": [
+                        "$domain_cdn"
+                    ]
+                },
+                "path": "$uuid",
+                "type": "ws"
+            },
+            "security": "auto",
+            "uuid": "$uuid"
+        },
+    {
+        "type": "hysteria2",
+        "tag": "hy2-sb",
+        "server": "$domain",
+        "server_port": $hyport,
+        "password": "$uuid",
+        "tls": {
+            "enabled": true,
+            "server_name": "www.bing.com",
+            "insecure": true,
+            "alpn": [
+                "h3"
+            ]
+        }
+    },
+        {
+            "type":"tuic",
+            "tag": "tuic5-sb",
+            "server": "$domain",
+            "server_port": $tuicport,
+            "uuid": "$uuid",
+            "password": "$uuid",
+            "congestion_control": "bbr",
+            "udp_relay_mode": "native",
+            "udp_over_stream": false,
+            "zero_rtt_handshake": false,
+            "heartbeat": "10s",
+            "tls":{
+                "enabled": true,
+                "server_name": "www.bing.com",
+                "insecure": true,
+                "alpn": [
+                    "h3"
+                ]
+            }
+        },
+    {
+      "tag": "direct",
+      "type": "direct"
+    },
+    {
+      "tag": "block",
+      "type": "block"
+    },
+    {
+      "tag": "dns-out",
+      "type": "dns"
+    },
+    {
+      "tag": "auto",
+      "type": "urltest",
+      "outbounds": [
+        "vless-tcp-reality",
+        "vless-grpc",
+        "vmess-sb",
+        "hy2-sb",
+        "tuic5-sb"
+      ],
+      "url": "https://cp.cloudflare.com/generate_204",
+      "interval": "1m",
+      "tolerance": 50,
+      "interrupt_exist_connections": false
+    }
+  ],
+  "route": {
+      "geoip": {
+      "download_url": "https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geoip.db",
+      "download_detour": "select"
+    },
+    "geosite": {
+      "download_url": "https://github.com/Chocolate4U/Iran-sing-box-rules/releases/download/202311250159/geosite.db",
+      "download_detour": "select"
+    },
+    "auto_detect_interface": true,
+    "rules": [
+      {
+        "geosite": "category-ads-all",
+        "outbound": "block"
+      },
+      {
+        "outbound": "dns-out",
+        "protocol": "dns"
+      },
+      {
+        "clash_mode": "Direct",
+        "outbound": "direct"
+      },
+      {
+        "clash_mode": "Global",
+        "outbound": "select"
+      },
+      {
+        "geosite": "ir",
+        "geoip": [
+          "ir",
+          "private"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "geosite": "geolocation-!ir",
+        "outbound": "select"
+      }
+    ]
+  },
+    "ntp": {
+    "enabled": true,
+    "server": "time.apple.com",
+    "server_port": 123,
+    "interval": "30m",
+    "detour": "direct"
+  }
+}
+EOL
+}
+
+#config2
+config-sing-boxx(){
+    cat <<EOL> /root/peyman/configs/config-sing-box.json
+{
+  "log": {
+    "disabled": false,
+    "level": "info",
+    "timestamp": true
+  },
+    "dns": {
+        "servers": [
+            {
+                "tag": "remote",
+                "address": "https://8.8.8.8/dns-query",
+                "strategy": "ipv4_only",
+                "detour": "select"
+            },
+            {
+                "tag": "local",
+                "address": "https://223.5.5.5/dns-query",
+                "strategy": "ipv4_only",
+                "detour": "direct"
+            },
+            {
+                "address": "rcode://success",
+                "tag": "block"
+            },
+            {
+                "tag": "dns_fakeip",
+                "strategy": "ipv4_only",
+                "address": "fakeip"
+            }
+        ],
+        "rules": [
+            {
+                "outbound": "any",
+                "server": "local"
+            },
+            {
+                "disable_cache": true,
+                "geosite": "category-ads-all",
+                "server": "block"
+            },
+            {
+                "clash_mode": "Global",
+                "server": "remote"
+            },
+            {
+                "clash_mode": "Direct",
+                "server": "local"
+            },
+            {
+                "geosite": "ir",
+                "server": "local"
+            },
+             {
+               "query_type": [
+                "A",
+                "AAAA"
+               ],
+              "server": "dns_fakeip"
+            }
+          ],
+           "fakeip": {
+           "enabled": true,
+           "inet4_range": "198.18.0.0/15",
+           "inet6_range": "fc00::/18"
+         },
+          "independent_cache": true
+        },
+      "inbounds": [
+    {
+      "type": "tun",
+      "inet4_address": "172.19.0.1/30",
+      "inet6_address": "fdfe:dcba:9876::1/126",
+      "auto_route": true,
+      "strict_route": true,
+      "sniff": true
+    }
+  ],
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:9090",
+      "external_ui": "ui",
+      "external_ui_download_url": "",
+      "external_ui_download_detour": "",
+      "secret": "",
+      "default_mode": "Rule",
+      "store_mode": true,
+      "store_selected": true,
+      "store_fakeip": true
+    }
+  },
+  "outbounds": [
+    {
+      "tag": "select",
+      "type": "selector",
+      "default": "auto",
+      "outbounds": [
+        "auto",
+        "vless-tcp-reality",
+        "vless-grpc",
+        "vmess-sb",
+        "hy2-sb",
+        "tuic5-sb"
+      ]
+    },
+    {
+      "type": "vless",
+      "tag": "vless-tcp-reality",
+      "server": "$domain",
+      "server_port": $vlessport,
+      "uuid": "$uuid",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.yahoo.com",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        },
+      "reality": {
+          "enabled": true,
+          "public_key": "$public_key",
+          "short_id": "$short_id"
+        }
+      }
+    },
 {
             "type": "vmess",
             "tag": "vmess-sb",
