@@ -1933,12 +1933,21 @@ config-nekoboxx() {
 EOL
 }
 
+check_status() {
+    if sudo systemctl is-active --quiet s-box.service; then
+        echo -e "${yellow}Sing-Box is: ${green}    [running ✔]${rest}"
+    else
+        echo -e "${yellow}Sing-Box is:${red}    [Not running ✗ ]${rest}"
+    fi
+}
+
 # Main menu
 menu() {
     clear
     echo "-- VLESS --VMESS --TUIC-- HYSTERIA2-- ARGO--"
     echo "By --> Peyman * Github.com/Ptechgithub * "
     echo ""
+    s-box.service
     echo -e "${green} --------${rest}#-${purple} Sing-Box ${rest}-#${green}--------${rest}"
     echo -e "${purple}1)${rest} Install"
     echo -e "${purple}2)${rest} Uninstall"
@@ -1968,6 +1977,8 @@ menu() {
 
 options() {
     clear
+    
+    echo""
     echo -e "${purple}1)${rest} Show Argo Host"
     echo -e "${purple}2)${rest} Change Vless SNI"
     echo -e "${red}0)${rest} Back to Menu"
