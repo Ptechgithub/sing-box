@@ -302,6 +302,7 @@ install() {
     (crontab -l ; echo "0 1 * * * systemctl restart sing-box >/dev/null 2>&1") | sort - | uniq - | crontab -
     if [[ $certInput == 2 ]]; then
         config-sing-box
+        config-nekobox
         telegram_tls
         setup_service
         config_tls
@@ -310,6 +311,7 @@ install() {
         setup_service
         config_ip
         config-sing-boxx
+        config-nekoboxx
     fi
 }
 
@@ -653,7 +655,7 @@ config_ip() {
         echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
 
-        vmess="{\"add\":\"www.visa.com\",\"aid\":\"0\",\"host\":\"$link\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"443\",\"ps\":\"peyman-vmess-Argo\",\"tls\":\"tls\",\"sni\":\"$link\",\"type\":\"none\",\"v\":\"2\"}"
+        vmess="{\"add\":\"104.31.16.60\",\"aid\":\"0\",\"host\":\"$link\",\"id\":\"$uuid\",\"net\":\"ws\",\"path\":\"$uuid\",\"port\":\"443\",\"ps\":\"peyman-vmess-Argo\",\"tls\":\"tls\",\"sni\":\"$link\",\"type\":\"none\",\"v\":\"2\"}"
         encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
         echo "vmess://$encoded_vmess"
         echo ""
@@ -1213,7 +1215,7 @@ config-sing-boxx(){
         "auto",
         "vless-tcp-reality",
         "vmess-sb",
-        "vmess-Grpc",
+        "vmess-ws-+ARGO-Tunnel",
         "hy2-sb",
         "tuic5-sb"
       ]
@@ -1267,8 +1269,8 @@ config-sing-boxx(){
     },
     {
         "type": "vmess",
-        "tag": "vmess-Grpc",
-        "server": "www.visa.com",
+        "tag": "vmess-ws-+ARGO-Tunnel",
+        "server": "104.31.16.60",
         "server_port": 443,
         "tls": {
             "enabled": true,
@@ -1345,7 +1347,7 @@ config-sing-boxx(){
       "outbounds": [
         "vless-tcp-reality",
         "vmess-sb",
-        "vmess-Grpc",
+        "vmess-ws-+ARGO-Tunnel",
         "hy2-sb",
         "tuic5-sb"
       ],
@@ -1399,6 +1401,533 @@ config-sing-boxx(){
     "server_port": 123,
     "interval": "30m",
     "detour": "direct"
+  }
+}
+EOL
+}
+
+config-nekobox() {
+    cat <<EOL> /root/peyman/configs/config-nekobox.json
+{
+  "dns": {
+    "independent_cache": true,
+    "rules": [
+      {
+        "domain": [
+          "$domain"
+        ],
+        "server": "dns-direct"
+      }
+    ],
+    "servers": [
+      {
+        "address": "https://1.1.1.1/dns-query",
+        "address_resolver": "dns-direct",
+        "strategy": "ipv4_only",
+        "tag": "dns-remote"
+      },
+      {
+        "address": "local",
+        "address_resolver": "dns-local",
+        "detour": "direct",
+        "strategy": "ipv4_only",
+        "tag": "dns-direct"
+      },
+      {
+        "address": "local",
+        "detour": "direct",
+        "tag": "dns-local"
+      },
+      {
+        "address": "rcode://success",
+        "tag": "dns-block"
+      }
+    ]
+  },
+  "experimental": {
+    "clash_api": {
+      "cache_file": "../cache/clash.db",
+      "external_controller": "127.0.0.1:9090",
+      "external_ui": "../files/yacd"
+    }
+  },
+  "inbounds": [
+    {
+      "listen": "127.0.0.1",
+      "listen_port": 6450,
+      "override_address": "8.8.8.8",
+      "override_port": 53,
+      "tag": "dns-in",
+      "type": "direct"
+    },
+    {
+      "domain_strategy": "",
+      "endpoint_independent_nat": true,
+      "inet4_address": [
+        "172.19.0.1/28"
+      ],
+      "mtu": 9000,
+      "sniff": true,
+      "sniff_override_destination": false,
+      "stack": "mixed",
+      "tag": "tun-in",
+      "type": "tun"
+    },
+    {
+      "domain_strategy": "",
+      "listen": "127.0.0.1",
+      "listen_port": 2080,
+      "sniff": true,
+      "sniff_override_destination": false,
+      "tag": "mixed-in",
+      "type": "mixed"
+    }
+  ],
+  "log": {
+    "level": "panic"
+  },
+  "outbounds": [
+    {
+      "alter_id": 0,
+      "packet_encoding": "",
+      "security": "auto",
+      "server": "$domain",
+      "server_port": $vmessport,
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "$domain"
+      },
+      "transport": {
+        "headers": {
+          "Host": "$domain"
+        },
+        "path": "$uuid",
+        "type": "ws"
+      },
+      "uuid": "$uuid",
+      "type": "vmess",
+      "domain_strategy": "",
+      "tag": "vmess-ws-tls"
+    },
+    {
+      "tag": "direct",
+      "type": "direct"
+    },
+    {
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "",
+      "server": "$domain",
+      "server_port": $vlessport,
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "reality": {
+          "enabled": true,
+          "public_key": "$public_key",
+          "short_id": "$short_id"
+        },
+        "server_name": "www.yahoo.com",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "uuid": "$uuid",
+      "type": "vless",
+      "domain_strategy": "",
+      "tag": "Vless-reality"
+    },
+    {
+      "packet_encoding": "",
+      "server": "$domain_cdn",
+      "server_port": $vlessgport,
+      "tls": {
+        "alpn": [
+          "h2"
+        ],
+        "enabled": true,
+        "insecure": false,
+        "server_name": "$domain_cdn",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "service_name": "$domain_cdn",
+        "type": "grpc"
+      },
+      "uuid": "$uuid",
+      "type": "vless",
+      "domain_strategy": "",
+      "tag": "Vless-Grpc-tls"
+    },
+    {
+      "congestion_control": "bbr",
+      "password": "$uuid",
+      "server": "$domain",
+      "server_port": $tuicport,
+      "tls": {
+        "alpn": [
+          "h3"
+        ],
+        "disable_sni": false,
+        "enabled": true,
+        "insecure": false,
+        "server_name": "$domain"
+      },
+      "uuid": "$uuid",
+      "zero_rtt_handshake": false,
+      "type": "tuic",
+      "domain_strategy": "",
+      "tag": "TUIC5"
+    },
+    {
+      "down_mbps": 0,
+      "hop_interval": 10,
+      "password": "$uuid",
+      "server": "$domain",
+      "server_port": $hyport,
+      "tls": {
+        "alpn": [
+          "h3"
+        ],
+        "enabled": true,
+        "insecure": false,
+        "server_name": "$domain"
+      },
+      "up_mbps": 0,
+      "type": "hysteria2",
+      "domain_strategy": "",
+      "tag": "HYSTERIA2"
+    },
+    {
+      "tag": "💚Internet💚",
+      "type": "selector",
+      "outbounds":[
+        "❤️Best Latency❤️",
+        "Vless-reality",
+        "TUIC5",
+        "HYSTERIA2",
+        "Vless-Grpc-tls",
+        "vmess-ws-tls"
+      ]
+    },
+    {
+      "tag": "❤️Best Latency❤️",
+      "type": "urltest",
+      "outbounds":[
+        "Vless-reality",
+        "TUIC5",
+        "HYSTERIA2",
+        "Vless-Grpc-tls",
+        "vmess-ws-tls"
+      ],
+      "url": "https://detectportal.firefox.com/success.txt",
+      "interval": "60s",
+      "tolerance": 0
+    },
+    {
+      "tag": "bypass",
+      "type": "direct"
+    },
+    {
+      "tag": "block",
+      "type": "block"
+    },
+    {
+      "tag": "dns-out",
+      "type": "dns"
+    }
+  ],
+  "route": {
+    "auto_detect_interface": true,
+    "rules": [
+      {
+        "outbound": "dns-out",
+        "port": [
+          53
+        ]
+      },
+      {
+        "inbound": [
+          "dns-in"
+        ],
+        "outbound": "dns-out"
+      },
+      {
+        "ip_cidr": [
+          "224.0.0.0/3",
+          "ff00::/8"
+        ],
+        "outbound": "block",
+        "source_ip_cidr": [
+          "224.0.0.0/3",
+          "ff00::/8"
+        ]
+      }
+    ]
+  }
+}
+EOL
+}
+
+config-nekoboxx() {
+    cat <<EOL> /root/peyman/configs/config-nekobox.json
+{
+  "dns": {
+    "independent_cache": true,
+    "rules": [
+      {
+        "domain": [
+          "dns.google"
+        ],
+        "server": "dns-direct"
+      }
+    ],
+    "servers": [
+      {
+        "address": "https://dns.google/dns-query",
+        "address_resolver": "dns-direct",
+        "strategy": "ipv4_only",
+        "tag": "dns-remote"
+      },
+      {
+        "address": "local",
+        "address_resolver": "dns-local",
+        "detour": "direct",
+        "strategy": "ipv4_only",
+        "tag": "dns-direct"
+      },
+      {
+        "address": "local",
+        "detour": "direct",
+        "tag": "dns-local"
+      },
+      {
+        "address": "rcode://success",
+        "tag": "dns-block"
+      }
+    ]
+  },
+  "experimental": {
+    "clash_api": {
+      "cache_file": "../cache/clash.db",
+      "external_controller": "127.0.0.1:9090",
+      "external_ui": "../files/yacd"
+    }
+  },
+  "inbounds": [
+    {
+      "listen": "127.0.0.1",
+      "listen_port": 6450,
+      "override_address": "8.8.8.8",
+      "override_port": 53,
+      "tag": "dns-in",
+      "type": "direct"
+    },
+    {
+      "domain_strategy": "",
+      "endpoint_independent_nat": true,
+      "inet4_address": [
+        "172.19.0.1/28"
+      ],
+      "mtu": 9000,
+      "sniff": true,
+      "sniff_override_destination": false,
+      "stack": "mixed",
+      "tag": "tun-in",
+      "type": "tun"
+    },
+    {
+      "domain_strategy": "",
+      "listen": "127.0.0.1",
+      "listen_port": 2080,
+      "sniff": true,
+      "sniff_override_destination": false,
+      "tag": "mixed-in",
+      "type": "mixed"
+    }
+  ],
+  "log": {
+    "level": "panic"
+  },
+  "outbounds": [
+    {
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "",
+      "server": "$domain",
+      "server_port": $vlessport,
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "reality": {
+          "enabled": true,
+          "public_key": "$public_key",
+          "short_id": "$short_id"
+        },
+        "server_name": "www.yahoo.com",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "uuid": "$uuid",
+      "type": "vless",
+      "domain_strategy": "",
+      "tag": "Vless-reality"
+    },
+    {
+      "congestion_control": "bbr",
+      "password": "$uuid",
+      "server": "$domain",
+      "server_port": $tuicport,
+      "tls": {
+        "alpn": [
+          "h3"
+        ],
+        "disable_sni": false,
+        "enabled": true,
+        "insecure": true,
+        "server_name": "www.bing.com"
+      },
+      "uuid": "$uuid",
+      "zero_rtt_handshake": false,
+      "type": "tuic",
+      "domain_strategy": "",
+      "tag": "TUIC5"
+    },
+    {
+      "down_mbps": 0,
+      "hop_interval": 10,
+      "password": "$uuid",
+      "server": "$domain",
+      "server_port": $hyport,
+      "tls": {
+        "alpn": [
+          "h3"
+        ],
+        "enabled": true,
+        "insecure": true,
+        "server_name": "www.bing.com"
+      },
+      "up_mbps": 0,
+      "type": "hysteria2",
+      "domain_strategy": "",
+      "tag": "HYSTERIA2"
+    },
+    {
+      "alter_id": 0,
+      "packet_encoding": "",
+      "security": "auto",
+      "server": "$domain",
+      "server_port": $vmessport,
+      "transport": {
+        "headers": {
+          "Host": "www.bing.com"
+        },
+        "path": "$uuid",
+        "type": "ws"
+      },
+      "uuid": "$uuid",
+      "type": "vmess",
+      "domain_strategy": "",
+      "tag": "vmess-ws"
+    },
+    {
+      "alter_id": 0,
+      "packet_encoding": "",
+      "security": "auto",
+      "server": "104.31.16.60",
+      "server_port": 443,
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "$link"
+      },
+      "transport": {
+        "headers": {
+          "Host": "$link"
+        },
+        "path": "$uuid",
+        "type": "ws"
+      },
+      "uuid": "$uuid",
+      "type": "vmess",
+      "domain_strategy": "",
+      "tag": "vmess-ws-+ARGO-Tunnel"
+    },
+    {
+      "tag": "💚Internet💚",
+      "type": "selector",
+      "outbounds":[
+        "❤️Best Latency❤️",
+        "Vless-reality",
+        "TUIC5",
+        "HYSTERIA2",
+        "vmess-ws",
+        "vmess-ws-+ARGO-Tunnel"
+      ]
+    },
+    {
+      "tag": "❤️Best Latency❤️",
+      "type": "urltest",
+      "outbounds":[
+        "Vless-reality",
+        "TUIC5",
+        "HYSTERIA2",
+        "vmess-ws",
+        "vmess-ws-+ARGO-Tunnel"
+      ],
+      "url": "https://detectportal.firefox.com/success.txt",
+      "interval": "60s",
+      "tolerance": 0
+    },
+    {
+      "tag": "direct",
+      "type": "direct"
+    },
+    {
+      "tag": "bypass",
+      "type": "direct"
+    },
+    {
+      "tag": "block",
+      "type": "block"
+    },
+    {
+      "tag": "dns-out",
+      "type": "dns"
+    }
+  ],
+  "route": {
+    "auto_detect_interface": true,
+    "rules": [
+      {
+        "outbound": "dns-out",
+        "port": [
+          53
+        ]
+      },
+      {
+        "inbound": [
+          "dns-in"
+        ],
+        "outbound": "dns-out"
+      },
+      {
+        "ip_cidr": [
+          "224.0.0.0/3",
+          "ff00::/8"
+        ],
+        "outbound": "block",
+        "source_ip_cidr": [
+          "224.0.0.0/3",
+          "ff00::/8"
+        ]
+      }
+    ]
   }
 }
 EOL
