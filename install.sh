@@ -1933,6 +1933,7 @@ config-nekoboxx() {
 EOL
 }
 
+#check_status
 check_status() {
     if sudo systemctl is-active --quiet s-box.service; then
         echo -e "${yellow}Sing-Box is: ${green}    [running ✔]${rest}"
