@@ -1947,7 +1947,7 @@ menu() {
     echo "-- VLESS --VMESS --TUIC-- HYSTERIA2-- ARGO--"
     echo "By --> Peyman * Github.com/Ptechgithub * "
     echo ""
-    s-box.service
+    check_status
     echo -e "${green} --------${rest}#-${purple} Sing-Box ${rest}-#${green}--------${rest}"
     echo -e "${purple}1)${rest} Install"
     echo -e "${purple}2)${rest} Uninstall"
