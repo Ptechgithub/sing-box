@@ -1936,9 +1936,9 @@ EOL
 #check_status
 check_status() {
     if sudo systemctl is-active --quiet s-box.service; then
-        echo -e "${yellow}Sing-Box is: ${green}  [running ✔]${rest}"
+        echo -e "${yellow}Sing-Box is:${green} [running ✔]${rest}"
     else
-        echo -e "${yellow}Sing-Box is:${red}  [Not running ✗ ]${rest}"
+        echo -e "${yellow}Sing-Box is:${red} [Not running ✗ ]${rest}"
     fi
 }
 
@@ -1976,12 +1976,30 @@ menu() {
     esac
 }
 
+show_files() {
+  files=("/root/peyman/configs/vless_config.txt"
+         "/root/peyman/configs/vmess_config.txt"
+         "/root/peyman/configs/tuic_config.txt"
+         "/root/peyman/configs/hysteria2_config.txt"
+         "/root/peyman/configs/vmess_Argo_config.txt"
+         "/root/peyman/configs/vless_grpc_config.txt")
+
+  for file in "${files[@]}"; do
+    if [ -e "$file" ]; then
+      echo -e "${purple}~~~~~~~~~~~~~~~~~${rest}"
+      cat "$file"
+      echo -e "${purple}~~~~~~~~~~~~~~~~~${rest}"
+    fi
+  done
+}
+
 options() {
     clear
     
     echo""
     echo -e "${purple}1)${rest} Show Argo Host"
-    echo -e "${purple}2)${rest} Change Vless SNI"
+    echo -e "${purple}2)${rest} Show All Configs"
+    echo -e "${purple}3)${rest} Change Vless SNI"
     echo -e "${red}0)${rest} Back to Menu"
     echo -e "${cyan}Enter your choice${rest} : \c"
     read choice
@@ -1991,6 +2009,9 @@ options() {
             argo_host
             ;;
         2)
+            show_files
+            ;;
+        3)
             update_vless_sni
             ;;
         0)
