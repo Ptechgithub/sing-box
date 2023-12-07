@@ -307,7 +307,6 @@ install() {
         setup_service
         config_tls
       else
-      echo"ggggggggggggggg"
         config-sing-boxx
         config-nekoboxx
         telegram_ip
