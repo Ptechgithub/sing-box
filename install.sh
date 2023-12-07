@@ -816,21 +816,21 @@ $(config_tls | grep -o 'vless://.*' | tail -n 1)"
             --data-urlencode "chat_id=$chat_id" \
             --data-urlencode "text=$message")
             
-        json_file="/root/peyman/configs/config-nekobox.json"
+        file="/root/peyman/configs/config-nekobox.json"
         caption="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Nekobox اجرا شود."
         
         curl -s -X POST \
             https://api.telegram.org/bot$token/sendDocument \
-            -F document=@$json_file \
+            -F document=@$file \
             -F chat_id=$chat_id \
             -F caption="$caption" > /dev/null 
             
-        json_files="/root/peyman/configs/config-sing-box.json"
+        files="/root/peyman/configs/config-sing-box.json"
         captions="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Sing-Box اجرا شود."
         
         curl -s -X POST \
             https://api.telegram.org/bot$token/sendDocument \
-            -F document=@$json_files \
+            -F document=@$files \
             -F chat_id=$chat_id \
             -F caption="$captions" > /dev/null 
 
