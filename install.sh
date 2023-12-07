@@ -307,11 +307,8 @@ install() {
         setup_service
         config_tls
       else
-        config-sing-boxx
-        config-nekoboxx
-        telegram_ip
         setup_service
-        config_ip
+        telegram_ip
     fi
 }
 
@@ -565,8 +562,73 @@ EOL
     sudo systemctl enable s-box.service
 }
 
+telegram_ip() {
+    echo -e "${cyan}Do you want to receive the configs through Telegram bot? (y/n)${rest} \c"
+    read configure_via_telegram
+
+    if [[ "$configure_via_telegram" == "y" ]]; then
+        echo -e "Enter your ${yellow}Telegram bot Token${rest} :\c"
+        read token
+
+        echo -e "Enter Your ${yellow}chat ID${rest}.${purple}(Get your Chat ID in: bot--> @userinfobot) ${rest}: \c"
+        read chat_id
+        display_progress 20
+        echo "Please wait about 20s for connecting Argo tunnel..."
+        config_ip
+
+        message="🖐سلام، کانفیگ های شما با موفقیت ساخته شد.
+
+1⃣
+$(config_ip | grep -o 'tuic://.*#peyman-tuic5')
+
+2⃣
+$(config_ip | grep -o 'hysteria2://.*#peyman-hy2')
+
+3⃣
+$(config_ip | grep -o 'vless://.*#peyman-vless-reality')
+
+4⃣
+$(config_ip | grep -o 'vmess://.*' | head -n 1)
+
+5️⃣
+$(config_ip | grep -o 'vmess://.*' | tail -n 1)"
+        
+        response=$(curl -s "https://api.telegram.org/bot$token/sendMessage" \
+            --data-urlencode "chat_id=$chat_id" \
+            --data-urlencode "text=$message")
+            
+        json_file="/root/peyman/configs/config-nekobox.json"
+        caption="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Nekobox اجرا شود."
+        
+        curl -s -X POST \
+            https://api.telegram.org/bot$token/sendDocument \
+            -F document=@$json_file \
+            -F chat_id=$chat_id \
+            -F caption="$caption" > /dev/null 
+            
+        json_files="/root/peyman/configs/config-sing-box.json"
+        captions="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Sing-Box اجرا شود."
+        
+        curl -s -X POST \
+            https://api.telegram.org/bot$token/sendDocument \
+            -F document=@$json_files \
+            -F chat_id=$chat_id \
+            -F caption="$captions" > /dev/null 
+
+
+        if [[ "$(echo "$response" | jq -r '.ok')" == "true" ]]; then
+            echo -e "${green}Message sent to telegram successfully!${rest}"
+        else
+            echo -e "${red}Failed to send message. Check your bot token and chat ID.${rest}"
+        fi
+    else
+        display_progress 10
+        echo "Please Wait..."
+        config_ip
+    fi
+}
+
 config_ip() {
-    display_progress 10
     nohup /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /etc/s-box/argo.log 2>&1 &
     
     max_wait_seconds=10
@@ -619,6 +681,8 @@ config_ip() {
         echo -e "${purple}----------------------------------------------------------------${rest}"
     else
         link=$(grep -o 'https://.*trycloudflare.com' /etc/s-box/argo.log | sed 's/https:\/\///')
+        config-sing-boxx
+        config-nekoboxx
         echo ""
         echo -e "${purple}--------------------These are your configs.----------------------${rest}"
         echo ""
@@ -666,119 +730,6 @@ config_ip() {
         
         (crontab -l 2>/dev/null | grep -q -F "@reboot /bin/bash -c \"/etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /etc/s-box/argo.log 2>&1\"") || (crontab -l 2>/dev/null ; echo "@reboot /bin/bash -c \"/etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /etc/s-box/argo.log 2>&1\"") | crontab - > /dev/null 2>&1
     fi
-}
-
-telegram_ip() {
-    echo -e "${cyan}Do you want to receive the configs through Telegram bot? (y/n)${rest} \c"
-    read configure_via_telegram
-
-    if [[ "$configure_via_telegram" == "y" ]]; then
-        echo -e "Enter your ${yellow}Telegram bot Token${rest} :\c"
-        read token
-
-        echo -e "Enter Your ${yellow}chat ID${rest}.${purple}(Get your Chat ID in: bot--> @userinfobot) ${rest}: \c"
-        read chat_id
-        display_progress 20
-        echo "Please wait about 20s for connecting Argo tunnel..."
-        
-
-        message="🖐سلام، کانفیگ های شما با موفقیت ساخته شد.
-
-1⃣
-$(config_ip | grep -o 'tuic://.*#peyman-tuic5')
-
-2⃣
-$(config_ip | grep -o 'hysteria2://.*#peyman-hy2')
-
-3⃣
-$(config_ip | grep -o 'vless://.*#peyman-vless-reality')
-
-4⃣
-$(config_ip | grep -o 'vmess://.*' | head -n 1)
-
-5️⃣
-$(config_ip | grep -o 'vmess://.*' | tail -n 1)"
-        
-        response=$(curl -s "https://api.telegram.org/bot$token/sendMessage" \
-            --data-urlencode "chat_id=$chat_id" \
-            --data-urlencode "text=$message")
-            
-        json_file="/root/peyman/configs/config-nekobox.json"
-        caption="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Nekobox اجرا شود."
-        
-        curl -s -X POST \
-            https://api.telegram.org/bot$token/sendDocument \
-            -F document=@$json_file \
-            -F chat_id=$chat_id \
-            -F caption="$caption" > /dev/null 
-            
-        json_files="/root/peyman/configs/config-sing-box.json"
-        captions="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Sing-Box اجرا شود."
-        
-        curl -s -X POST \
-            https://api.telegram.org/bot$token/sendDocument \
-            -F document=@$json_files \
-            -F chat_id=$chat_id \
-            -F caption="$captions" > /dev/null 
-
-
-        if [[ "$(echo "$response" | jq -r '.ok')" == "true" ]]; then
-            echo -e "${green}Message sent to telegram successfully!${rest}"
-        else
-            echo -e "${red}Failed to send message. Check your bot token and chat ID.${rest}"
-        fi
-    else
-        echo "Please Wait..."
-        show_output=$(config_ip)
-    fi
-}
-
-config_tls() {
-    sleep 1
-    echo ""
-    echo -e "${purple}--------------------These are your configs.----------------------${rest}"
-    echo ""
-    echo -e "${purple}---------------------------------TUIC5-------------------------------${rest}"
-    tuic="tuic://$uuid:$uuid@$domain:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=$domain&allow_insecure=0#peyman-tuic5"
-    echo "$tuic"
-    echo ""
-    echo "$tuic" | qrencode -t ANSIUTF8
-    echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
-    
-    hysteria2="hysteria2://$uuid@$domain:$hyport?insecure=0&mport=$hyport&sni=$domain#peyman-hy2"
-    echo "$hysteria2"
-    echo ""
-    echo -e "${purple}-------------------------------HYSTERIA2-----------------------------${rest}"
-    echo "$hysteria2" | qrencode -t ANSIUTF8
-    echo "$hysteria2" > "/root/peyman/configs/hysteria2_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
-    
-    vless="vless://$uuid@$domain:$vlessport?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.yahoo.com&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#peyman-vless-reality"
-    echo "$vless"
-    echo ""
-    echo -e "${purple}----------------------------VlESS-TCP-REALITY------------------------${rest}"
-    echo "$vless" | qrencode -t ANSIUTF8
-    echo "$vless" > "/root/peyman/configs/vless_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
-
-    vlessg="vless://$uuid@$domain_cdn:$vlessgport/?type=grpc&encryption=none&serviceName=$domain_cdn&security=tls&sni=$domain_cdn&alpn=h2&fp=chrome#peyman-Vless-GRPC-Tls"
-    echo "$vlessg"
-    echo ""
-    echo -e "${purple}---------------------------------VLESS-GRPC-TLS-----------------------------${rest}"
-    echo "$vlessg" | qrencode -t ANSIUTF8
-    echo "$vlessg" > "/root/peyman/configs/vless_grpc_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
-
-    
-    vmess='{"add":"'$domain_cdn'","aid":"0","host":"'$domain_cdn'","id":"'$uuid'","net":"ws","path":"'$uuid'","port":"'$vmessport'","ps":"peyman-ws-tls","tls":"tls","sni":"'$domain_cdn'","type":"none","v":"2"}'
-    encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
-    echo "vmess://$encoded_vmess"
-    echo ""
-    echo -e "${purple}--------------------------------VMESS-WS-TLS----------------------------${rest}"
-    echo "$vmess://$encoded_vmess" | qrencode -t ANSIUTF8
-    echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
-    echo -e "${purple}----------------------------------------------------------------${rest}"
 }
 
 telegram_tls() {
@@ -844,6 +795,55 @@ $(config_tls | grep -o 'vless://.*' | tail -n 1)"
         show_output=$(config_tls)
     fi
 }
+
+config_tls() {
+    sleep 1
+    echo ""
+    echo -e "${purple}--------------------These are your configs.----------------------${rest}"
+    echo ""
+    echo -e "${purple}---------------------------------TUIC5-------------------------------${rest}"
+    tuic="tuic://$uuid:$uuid@$domain:$tuicport?congestion_control=bbr&udp_relay_mode=native&alpn=h3&sni=$domain&allow_insecure=0#peyman-tuic5"
+    echo "$tuic"
+    echo ""
+    echo "$tuic" | qrencode -t ANSIUTF8
+    echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
+    echo -e "${purple}----------------------------------------------------------------${rest}"
+    
+    hysteria2="hysteria2://$uuid@$domain:$hyport?insecure=0&mport=$hyport&sni=$domain#peyman-hy2"
+    echo "$hysteria2"
+    echo ""
+    echo -e "${purple}-------------------------------HYSTERIA2-----------------------------${rest}"
+    echo "$hysteria2" | qrencode -t ANSIUTF8
+    echo "$hysteria2" > "/root/peyman/configs/hysteria2_config.txt"
+    echo -e "${purple}----------------------------------------------------------------${rest}"
+    
+    vless="vless://$uuid@$domain:$vlessport?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.yahoo.com&fp=chrome&pbk=$public_key&sid=$short_id&type=tcp&headerType=none#peyman-vless-reality"
+    echo "$vless"
+    echo ""
+    echo -e "${purple}----------------------------VlESS-TCP-REALITY------------------------${rest}"
+    echo "$vless" | qrencode -t ANSIUTF8
+    echo "$vless" > "/root/peyman/configs/vless_config.txt"
+    echo -e "${purple}----------------------------------------------------------------${rest}"
+
+    vlessg="vless://$uuid@$domain_cdn:$vlessgport/?type=grpc&encryption=none&serviceName=$domain_cdn&security=tls&sni=$domain_cdn&alpn=h2&fp=chrome#peyman-Vless-GRPC-Tls"
+    echo "$vlessg"
+    echo ""
+    echo -e "${purple}---------------------------------VLESS-GRPC-TLS-----------------------------${rest}"
+    echo "$vlessg" | qrencode -t ANSIUTF8
+    echo "$vlessg" > "/root/peyman/configs/vless_grpc_config.txt"
+    echo -e "${purple}----------------------------------------------------------------${rest}"
+
+    
+    vmess='{"add":"'$domain_cdn'","aid":"0","host":"'$domain_cdn'","id":"'$uuid'","net":"ws","path":"'$uuid'","port":"'$vmessport'","ps":"peyman-ws-tls","tls":"tls","sni":"'$domain_cdn'","type":"none","v":"2"}'
+    encoded_vmess=$(echo -n "$vmess" | base64 -w 0)
+    echo "vmess://$encoded_vmess"
+    echo ""
+    echo -e "${purple}--------------------------------VMESS-WS-TLS----------------------------${rest}"
+    echo "$vmess://$encoded_vmess" | qrencode -t ANSIUTF8
+    echo "vmess://$encoded_vmess" > "/root/peyman/configs/vmess_config.txt"
+    echo -e "${purple}----------------------------------------------------------------${rest}"
+}
+
 
 uninstall() {
     # Check if the service is installed
