@@ -307,11 +307,11 @@ install() {
         setup_service
         config_tls
       else
+        config-sing-boxx
+        config-nekoboxx
         telegram_ip
         setup_service
         config_ip
-        config-sing-boxx
-        config-nekoboxx
     fi
 }
 
@@ -566,10 +566,10 @@ EOL
 }
 
 config_ip() {
-    display_progress 12
+    display_progress 10
     nohup /etc/s-box/cloudflared tunnel --url http://localhost:$(jq -r .inbounds[1].listen_port /etc/s-box/sb.json) --edge-ip-version auto --no-autoupdate --protocol http2 > /etc/s-box/argo.log 2>&1 &
     
-    max_wait_seconds=15
+    max_wait_seconds=10
     seconds_waited=0
     
     while [ $seconds_waited -lt $max_wait_seconds ]; do
@@ -702,6 +702,25 @@ $(config_ip | grep -o 'vmess://.*' | tail -n 1)"
         response=$(curl -s "https://api.telegram.org/bot$token/sendMessage" \
             --data-urlencode "chat_id=$chat_id" \
             --data-urlencode "text=$message")
+            
+        json_file="/root/peyman/configs/config-nekobox.json"
+        caption="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Nekobox اجرا شود."
+        
+        curl -s -X POST \
+            https://api.telegram.org/bot$token/sendDocument \
+            -F document=@$json_file \
+            -F chat_id=$chat_id \
+            -F caption="$caption" > /dev/null 
+            
+        json_files="/root/peyman/configs/config-sing-box.json"
+        captions="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Sing-Box اجرا شود."
+        
+        curl -s -X POST \
+            https://api.telegram.org/bot$token/sendDocument \
+            -F document=@$json_files \
+            -F chat_id=$chat_id \
+            -F caption="$captions" > /dev/null 
+
 
         if [[ "$(echo "$response" | jq -r '.ok')" == "true" ]]; then
             echo -e "${green}Message sent to telegram successfully!${rest}"
@@ -715,7 +734,6 @@ $(config_ip | grep -o 'vmess://.*' | tail -n 1)"
 }
 
 config_tls() {
-    display_progress 2
     sleep 1
     echo ""
     echo -e "${purple}--------------------These are your configs.----------------------${rest}"
@@ -773,7 +791,7 @@ telegram_tls() {
 
         echo -e "Enter Your ${yellow}chat ID${rest}.${purple}(Get your Chat ID in: bot--> @userinfobot) ${rest}: \c"
         read chat_id
-        display_progress 20
+        display_progress 10
         sleep 1
         echo "Please Wait..."
 
@@ -793,10 +811,29 @@ $(config_tls | grep -o 'vmess://.*')
 
 5️⃣
 $(config_tls | grep -o 'vless://.*' | tail -n 1)"
-        
+
         response=$(curl -s "https://api.telegram.org/bot$token/sendMessage" \
             --data-urlencode "chat_id=$chat_id" \
             --data-urlencode "text=$message")
+            
+        json_file="/root/peyman/configs/config-nekobox.json"
+        caption="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Nekobox اجرا شود."
+        
+        curl -s -X POST \
+            https://api.telegram.org/bot$token/sendDocument \
+            -F document=@$json_file \
+            -F chat_id=$chat_id \
+            -F caption="$caption" > /dev/null 
+            
+        json_files="/root/peyman/configs/config-sing-box.json"
+        captions="📦 این فایل ترکیب کانفیگ با هم است. لطفا روی نرم افزار Sing-Box اجرا شود."
+        
+        curl -s -X POST \
+            https://api.telegram.org/bot$token/sendDocument \
+            -F document=@$json_files \
+            -F chat_id=$chat_id \
+            -F caption="$captions" > /dev/null 
+
 
         if [[ "$(echo "$response" | jq -r '.ok')" == "true" ]]; then
             echo -e "${green}Message sent to telegram successfully!${rest}"
