@@ -18,6 +18,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/Ptechgithub/sing-box/main/in
 قرار دارد که میتونید روی خود نرم افزار sing-box استفاده کنید. با این کار نرم افزار به طور اتوماتیک به هر کدوم از کانفیگ ها که در لحظه سرعت و پینگ بهتری داشته باشه وصل میشه. و کانفیگ شما هم قطع نمیشه. مثل تصویر زیر:
 - ![10](https://raw.githubusercontent.com/Ptechgithub/configs/main/media/10.jpg)
 
+- ![13](https://raw.githubusercontent.com/Ptechgithub/configs/main/media/13.jpg)
+
 
 
 ### Clients
