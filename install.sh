@@ -152,7 +152,7 @@ install_certs(){
             [[ -z $domain ]] && red "No domain name entered, unable to perform operation！" && exit 1
             echo -e "${green}Domain name entered: $domain${rest}" && sleep 1
             check_and_close_port
-            domainIP=$(curl -sm8 ipget.net/?ip="${domain}")
+            domainIP=$(dig +short "${domain}")
             if [[ $domainIP == $ip ]]; then
                 if [[ $ID == "CentOS" ]]; then
                     $pm install cronie -y
