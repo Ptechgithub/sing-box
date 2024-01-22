@@ -81,7 +81,7 @@ ip=$(hostname -I | awk '{print $1}')
 check_dependencies() {
     detect_distribution
 
-    local dependencies=("curl" "wget" "openssl" "socat" "coreutils" "jq" "lsof" "qrencode")
+    local dependencies=("curl" "wget" "dnsutils" "openssl" "socat" "coreutils" "jq" "lsof" "qrencode")
 
     for dep in "${dependencies[@]}"; do
         if ! command -v "${dep}" &> /dev/null; then
