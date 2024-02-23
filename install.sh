@@ -1155,99 +1155,90 @@ config-sing-boxx(){
     cat <<EOL> /root/peyman/configs/config-sing-box.json
 {
   "log": {
-    "disabled": false,
     "level": "info",
     "timestamp": true
   },
-    "dns": {
-        "servers": [
-            {
-                "tag": "remote",
-                "address": "https://8.8.8.8/dns-query",             
-                "detour": "select"
-            },
-            {
-                "tag": "local",
-                "address": "h3://223.5.5.5/dns-query",
-                "detour": "direct"
-            },
-            {
-                "address": "rcode://success",
-                "tag": "block"
-            },
-            {
-                "tag": "dns_fakeip",
-                "address": "fakeip"
-            }
+  "dns": {
+    "servers": [
+      {
+        "tag": "remote",
+        "address": "https://8.8.8.8/dns-query",
+        "detour": "select"
+      },
+      {
+        "tag": "local",
+        "address": "h3://223.5.5.5/dns-query",
+        "detour": "direct"
+      },
+      {
+        "tag": "block",
+        "address": "rcode://success"
+      },
+      {
+        "tag": "dns_fakeip",
+        "address": "fakeip"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "any",
+        "server": "local",
+        "disable_cache": true
+      },
+      {
+        "clash_mode": "Global",
+        "server": "remote"
+      },
+      {
+        "clash_mode": "Direct",
+        "server": "local"
+      },
+      {
+        "geosite": "ir",
+        "server": "local"
+      },
+      {
+        "geosite": "geolocation-!ir",
+        "server": "remote"
+      },
+      {
+        "query_type": [
+          "A",
+          "AAAA"
         ],
-        "rules": [
-            {
-                "outbound": "any",
-                "server": "local",
-                "disable_cache": true
-            },
-            {
-                "clash_mode": "Global",
-                "server": "remote"
-            },
-            {
-                "clash_mode": "Direct",
-                "server": "local"
-            },
-            {
-                "geosite": "ir",
-                "server": "local"
-            },
-            {
-                "geosite": "geolocation-!ir",
-                "server": "remote"
-            },
-             {
-                "geosite": "geolocation-!ir",             
-                "query_type": [
-                    "A",
-                    "AAAA"
-                ],
-                "server": "dns_fakeip"
-            }
-          ],
-           "fakeip": {
-           "enabled": true,
-           "inet4_range": "198.18.0.0/15",
-           "inet6_range": "fc00::/18"
-         },
-          "independent_cache": true,
-          "final": "remote"
-        },
-      "inbounds": [
+        "geosite": "geolocation-!ir",
+        "server": "dns_fakeip"
+      }
+    ],
+    "final": "remote",
+    "fakeip": {
+      "enabled": true,
+      "inet4_range": "198.18.0.0/15",
+      "inet6_range": "fc00::/18"
+    },
+    "independent_cache": true
+  },
+  "ntp": {
+    "enabled": true,
+    "server": "time.apple.com",
+    "server_port": 123,
+    "interval": "30m0s",
+    "detour": "direct"
+  },
+  "inbounds": [
     {
       "type": "tun",
       "inet4_address": "172.19.0.1/30",
-      //"inet6_address": "fdfe:dcba:9876::1/126",
       "auto_route": true,
       "strict_route": true,
       "stack": "mixed",
       "sniff": true
     }
   ],
-  "experimental": {
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "external_ui": "ui",
-      "external_ui_download_url": "",
-      "external_ui_download_detour": "",
-      "secret": "",
-      "default_mode": "Rule",
-      "store_mode": true,
-      "store_selected": true,
-      "store_fakeip": true
-    }
-  },
   "outbounds": [
     {
-      "tag": "select",
       "type": "selector",
-      "default": "auto",
+      "tag": "select",
       "outbounds": [
         "auto",
         "vless-tcp-reality",
@@ -1255,7 +1246,8 @@ config-sing-boxx(){
         "vmess-ws-+ARGO-Tunnel",
         "hy2-sb",
         "tuic5-sb"
-      ]
+      ],
+      "default": "auto"
     },
     {
       "type": "vless",
@@ -1271,116 +1263,104 @@ config-sing-boxx(){
           "enabled": true,
           "fingerprint": "chrome"
         },
-      "reality": {
+        "reality": {
           "enabled": true,
           "public_key": "$public_key",
           "short_id": "$short_id"
         }
       }
     },
-{
-        "type": "vmess",
-        "tag": "vmess-sb",
-        "server": "$domain",
-        "server_port": $vmessport,
-        "tls": {
-            "enabled": false,
-            "server_name": "$domain",
-            "insecure": true,
-            "utls": {
-                "enabled": true,
-                "fingerprint": "chrome"
-            }
-        },
-        "transport": {
-            "headers": {
-                "Host": [
-                    "$domain"
-                ]
-            },
-            "path": "$uuid",
-            "type": "ws"
-        },
-        "security": "auto",
-        "uuid": "$uuid"
-    },
     {
-        "type": "vmess",
-        "tag": "vmess-ws-+ARGO-Tunnel",
-        "server": "104.31.16.60",
-        "server_port": 443,
-        "tls": {
-            "enabled": true,
-            "server_name": "$link",
-            "insecure": false,
-            "utls": {
-                "enabled": true,
-                "fingerprint": "chrome"
-            }
-        },
-        "transport": {
-            "headers": {
-                "Host": [
-                    "$link"
-                ]
-            },
-            "path": "$uuid",
-            "type": "ws"
-        },
-        "security": "auto",
-        "uuid": "$uuid"
-    },
-    {
-        "type": "hysteria2",
-        "tag": "hy2-sb",
-        "server": "$domain",
-        "server_port": $hyport,
-        "password": "$uuid",
-        "tls": {
-            "enabled": true,
-            "server_name": "www.bing.com",
-            "insecure": true,
-            "alpn": [
-                "h3"
-            ]
+      "type": "vmess",
+      "tag": "vmess-sb",
+      "server": "$domain",
+      "server_port": $vmessport,
+      "uuid": "$uuid",
+      "security": "auto",
+      "tls": {
+        "server_name": "$domain",
+        "insecure": true,
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
         }
-    },
-        {
-            "type":"tuic",
-            "tag": "tuic5-sb",
-            "server": "$domain",
-            "server_port": $tuicport,
-            "uuid": "$uuid",
-            "password": "$uuid",
-            "congestion_control": "bbr",
-            "udp_relay_mode": "native",
-            "udp_over_stream": false,
-            "zero_rtt_handshake": false,
-            "heartbeat": "10s",
-            "tls":{
-                "enabled": true,
-                "server_name": "www.bing.com",
-                "insecure": true,
-                "alpn": [
-                    "h3"
-                ]
-            }
-        },
-    {
-      "tag": "direct",
-      "type": "direct"
+      },
+      "transport": {
+        "type": "ws",
+        "path": "$uuid",
+        "headers": {
+          "Host": "$domain"
+        }
+      }
     },
     {
-      "tag": "block",
-      "type": "block"
+      "type": "vmess",
+      "tag": "vmess-ws-+ARGO-Tunnel",
+      "server": "104.31.16.60",
+      "server_port": 443,
+      "uuid": "$uuid",
+      "security": "auto",
+      "tls": {
+        "enabled": true,
+        "server_name": "$link",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "$uuid",
+        "headers": {
+          "Host": "$link"
+        }
+      }
     },
     {
-      "tag": "dns-out",
-      "type": "dns"
+      "type": "hysteria2",
+      "tag": "hy2-sb",
+      "server": "$domain",
+      "server_port": $hyport,
+      "password": "$uuid",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.bing.com",
+        "insecure": true,
+        "alpn": "h3"
+      }
     },
     {
-      "tag": "auto",
+      "type": "tuic",
+      "tag": "tuic5-sb",
+      "server": "$domain",
+      "server_port": $tuicport,
+      "uuid": "$uuid",
+      "password": "$uuid",
+      "congestion_control": "bbr",
+      "udp_relay_mode": "native",
+      "heartbeat": "10s",
+      "tls": {
+        "enabled": true,
+        "server_name": "www.bing.com",
+        "insecure": true,
+        "alpn": "h3"
+      }
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    },
+    {
+      "type": "dns",
+      "tag": "dns-out"
+    },
+    {
       "type": "urltest",
+      "tag": "auto",
       "outbounds": [
         "vless-tcp-reality",
         "vmess-sb",
@@ -1389,26 +1369,23 @@ config-sing-boxx(){
         "tuic5-sb"
       ],
       "url": "https://cp.cloudflare.com/generate_204",
-      "interval": "1m",
-      "tolerance": 50,
-      "interrupt_exist_connections": false
+      "interval": "1m0s",
+      "tolerance": 50
     }
   ],
   "route": {
-      "geoip": {
-      "download_url": "https://mirror.ghproxy.com/https://github.com/Ptechgithub/sing-box/blob/main/geo/geoip.db",
+    "geoip": {
+      "download_url": "https://github.com/Ptechgithub/sing-box/blob/main/geo/geoip.db",
       "download_detour": "select"
     },
     "geosite": {
-      "download_url": "https://mirror.ghproxy.com/https://github.com/Ptechgithub/sing-box/blob/main/geo/geosite.db",
+      "download_url": "https://github.com/Ptechgithub/sing-box/blob/main/geo/geosite.db",
       "download_detour": "select"
     },
-    "auto_detect_interface": true,
-    "final": "select",
     "rules": [
       {
-        "outbound": "dns-out",
-        "protocol": "dns"
+        "protocol": "dns",
+        "outbound": "dns-out"
       },
       {
         "clash_mode": "Direct",
@@ -1430,14 +1407,15 @@ config-sing-boxx(){
         "geosite": "geolocation-!ir",
         "outbound": "select"
       }
-    ]
+    ],
+    "final": "select",
+    "auto_detect_interface": true
   },
-    "ntp": {
-    "enabled": true,
-    "server": "time.apple.com",
-    "server_port": 123,
-    "interval": "30m",
-    "detour": "direct"
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "path": "cache.db"
+    }
   }
 }
 EOL
