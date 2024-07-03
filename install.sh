@@ -406,6 +406,10 @@ server_config() {
         "sniff_override_destination": true,
         "listen": "::",
         "listen_port": $hyport,
+        "obfs": {
+        "type": "salamander",
+        "password": "$uuid"
+        },
         "users": [
             {
                 "password": "$uuid"
@@ -417,8 +421,8 @@ server_config() {
             "alpn": [
                 "h3"
             ],
-            "min_version":"1.2",
-            "max_version":"1.3",
+             "enabled": true,
+             "server_name": "www.google.com",
             "certificate_path": "/root/peyman/cert.crt",
             "key_path": "/root/peyman/private.key"
         }
@@ -655,7 +659,7 @@ config_ip() {
         echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
         
-        hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com#peyman-hy2"
+        hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com&obfs=salamander&obfs-password=$uuid#peyman-hy2"
         echo "$hysteria2"
         echo ""
         echo -e "${purple}-------------------------------HYSTERIA2-----------------------------${rest}"
@@ -694,7 +698,7 @@ config_ip() {
         echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
         echo -e "${purple}----------------------------------------------------------------${rest}"
         
-        hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com#peyman-hy2"
+        hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com&obfs=salamander&obfs-password=$uuid#peyman-hy2"
         echo "$hysteria2"
         echo ""
         echo -e "${purple}-------------------------------HYSTERIA2-----------------------------${rest}"
@@ -809,7 +813,7 @@ config_tls() {
     echo "$tuic" > "/root/peyman/configs/tuic_config.txt"
     echo -e "${purple}----------------------------------------------------------------${rest}"
     
-    hysteria2="hysteria2://$uuid@$domain:$hyport?insecure=0&mport=$hyport&sni=$domain#peyman-hy2"
+    hysteria2="hysteria2://$uuid@$ip:$hyport?insecure=1&mport=$hyport&sni=www.bing.com&obfs=salamander&obfs-password=$uuid#peyman-hy2"
     echo "$hysteria2"
     echo ""
     echo -e "${purple}-------------------------------HYSTERIA2-----------------------------${rest}"
@@ -1031,6 +1035,10 @@ config-sing-box(){
       "tag": "hy2-sb",
       "server": "$domain",
       "server_port": $hyport,
+      "obfs": {
+	    "type": "salamander",
+	    "password": "$uuid"
+	  },
       "password": "$uuid",
       "tls": {
         "enabled": true,
@@ -1302,6 +1310,10 @@ config-sing-boxx(){
       "tag": "hy2-sb",
       "server": "$domain",
       "server_port": $hyport,
+      "obfs": {
+	    "type": "salamander",
+	    "password": "$uuid"
+	  },
       "password": "$uuid",
       "tls": {
         "enabled": true,
