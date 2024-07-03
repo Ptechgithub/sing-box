@@ -1067,20 +1067,20 @@ config-sing-box(){
       }
     },
     {
-      "type": "direct",
-      "tag": "direct"
+      "tag": "direct",
+      "type": "direct"
     },
     {
-      "type": "block",
-      "tag": "block"
+      "tag": "block",
+      "type": "block"
     },
     {
-      "type": "dns",
-      "tag": "dns-out"
+      "tag": "dns-out",
+      "type": "dns"
     },
     {
-      "type": "urltest",
       "tag": "auto",
+      "type": "urltest",
       "outbounds": [
         "vless-ubuntu-2gb-hel1-1",
         "vmess-ubuntu-2gb-hel1-1",
@@ -1088,15 +1088,44 @@ config-sing-box(){
         "tuic5-ubuntu-2gb-hel1-1"
       ],
       "url": "https://www.gstatic.com/generate_204",
-      "interval": "1m0s",
-      "tolerance": 50
+      "interval": "1m",
+      "tolerance": 50,
+      "interrupt_exist_connections": false
     }
   ],
   "route": {
+      "rule_set": [
+            {
+                "tag": "geosite-geolocation-!cn",
+                "type": "remote",
+                "format": "binary",
+                "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
+                "download_detour": "select",
+                "update_interval": "1d"
+            },
+            {
+                "tag": "geosite-ir",
+                "type": "remote",
+                "format": "binary",
+                "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.srs",
+                "download_detour": "select",
+                "update_interval": "1d"
+            },
+            {
+                "tag": "geoip-ir",
+                "type": "remote",
+                "format": "binary",
+                "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
+                "download_detour": "select",
+                "update_interval": "1d"
+            }
+        ],
+    "auto_detect_interface": true,
+    "final": "select",
     "rules": [
       {
-        "protocol": "dns",
-        "outbound": "dns-out"
+        "outbound": "dns-out",
+        "protocol": "dns"
       },
       {
         "clash_mode": "Direct",
@@ -1107,65 +1136,31 @@ config-sing-box(){
         "outbound": "select"
       },
       {
-        "rule_set": "geoip-cn",
+        "rule_set": "geoip-ir",
         "outbound": "direct"
       },
       {
-        "rule_set": "geosite-cn",
+        "rule_set": "geosite-ir",
         "outbound": "direct"
       },
       {
-        "ip_is_private": true,
-        "outbound": "direct"
+      "ip_is_private": true,
+      "outbound": "direct"
       },
       {
-        "rule_set": "geosite-geolocation-!cn",
+        "rule_set": "geosite-geolocation-!ir",
         "outbound": "select"
       }
-    ],
-    "rule_set": [
-      {
-        "type": "remote",
-        "tag": "geosite-geolocation-!cn",
-        "format": "binary",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
-        "download_detour": "select",
-        "update_interval": "24h0m0s"
-      },
-      {
-        "type": "remote",
-        "tag": "geosite-cn",
-        "format": "binary",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.srs",
-        "download_detour": "select",
-        "update_interval": "24h0m0s"
-      },
-      {
-        "type": "remote",
-        "tag": "geoip-cn",
-        "format": "binary",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
-        "download_detour": "select",
-        "update_interval": "24h0m0s"
-      }
-    ],
-    "final": "select",
-    "auto_detect_interface": true
+    ]
   },
-  "experimental": {
-    "cache_file": {
-      "enabled": true,
-      "path": "cache.db",
-      "store_fakeip": true
-    },
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "external_ui": "ui",
-      "default_mode": "Rule"
-    }
+    "ntp": {
+    "enabled": true,
+    "server": "time.apple.com",
+    "server_port": 123,
+    "interval": "30m",
+    "detour": "direct"
   }
 }
-
 EOL
 }
 
@@ -1180,18 +1175,18 @@ config-sing-boxx(){
   "dns": {
     "servers": [
       {
-        "tag": "proxydns",
-        "address": "tls://8.8.8.8/dns-query",
+        "tag": "remote",
+        "address": "https://8.8.8.8/dns-query",
         "detour": "select"
       },
       {
-        "tag": "localdns",
+        "tag": "local",
         "address": "h3://223.5.5.5/dns-query",
         "detour": "direct"
       },
       {
         "tag": "block",
-        "address": "rcode://refused"
+        "address": "rcode://success"
       },
       {
         "tag": "dns_fakeip",
@@ -1201,35 +1196,35 @@ config-sing-boxx(){
     "rules": [
       {
         "outbound": "any",
-        "server": "localdns",
+        "server": "local",
         "disable_cache": true
       },
       {
         "clash_mode": "Global",
-        "server": "proxydns"
+        "server": "remote"
       },
       {
         "clash_mode": "Direct",
-        "server": "localdns"
+        "server": "local"
       },
       {
-        "rule_set": "geosite-cn",
-        "server": "localdns"
+        "geosite": "ir",
+        "server": "local"
       },
       {
-        "rule_set": "geosite-geolocation-!cn",
-        "server": "proxydns"
+        "geosite": "geolocation-!ir",
+        "server": "remote"
       },
       {
         "query_type": [
           "A",
           "AAAA"
         ],
-        "rule_set": "geosite-geolocation-!cn",
+        "geosite": "geolocation-!ir",
         "server": "dns_fakeip"
       }
     ],
-    "final": "proxydns",
+    "final": "remote",
     "fakeip": {
       "enabled": true,
       "inet4_range": "198.18.0.0/15",
@@ -1239,21 +1234,19 @@ config-sing-boxx(){
   },
   "ntp": {
     "enabled": true,
-    "interval": "30m0s",
     "server": "time.apple.com",
     "server_port": 123,
+    "interval": "30m0s",
     "detour": "direct"
   },
   "inbounds": [
     {
       "type": "tun",
+      "inet4_address": "172.19.0.1/30",
       "auto_route": true,
       "strict_route": true,
-      "sniff": true,
-      "sniff_override_destination": true,
-      "domain_strategy": "prefer_ipv4",
-      "inet4_address": "172.19.0.1/30",
-      "inet6_address": "fd00::1/126"
+      "stack": "mixed",
+      "sniff": true
     }
   ],
   "outbounds": [
@@ -1387,17 +1380,26 @@ config-sing-boxx(){
       "type": "urltest",
       "tag": "auto",
       "outbounds": [
-        "vless-ubuntu-2gb-hel1-1",
-        "vmess-ubuntu-2gb-hel1-1",
-        "hy2-ubuntu-2gb-hel1-1",
-        "tuic5-ubuntu-2gb-hel1-1"
+        "vless-tcp-reality",
+        "vmess-sb",
+        "vmess-ws-+ARGO-Tunnel",
+        "hy2-sb",
+        "tuic5-sb"
       ],
-      "url": "https://www.gstatic.com/generate_204",
+      "url": "https://cp.cloudflare.com/generate_204",
       "interval": "1m0s",
       "tolerance": 50
     }
   ],
   "route": {
+    "geoip": {
+      "download_url": "https://github.com/Ptechgithub/sing-box/blob/main/geo/geoip.db",
+      "download_detour": "select"
+    },
+    "geosite": {
+      "download_url": "https://github.com/Ptechgithub/sing-box/blob/main/geo/geosite.db",
+      "download_detour": "select"
+    },
     "rules": [
       {
         "protocol": "dns",
@@ -1412,46 +1414,16 @@ config-sing-boxx(){
         "outbound": "select"
       },
       {
-        "rule_set": "geoip-cn",
+        "geosite": "ir",
+        "geoip": [
+          "ir",
+          "private"
+        ],
         "outbound": "direct"
       },
       {
-        "rule_set": "geosite-cn",
-        "outbound": "direct"
-      },
-      {
-        "ip_is_private": true,
-        "outbound": "direct"
-      },
-      {
-        "rule_set": "geosite-geolocation-!cn",
+        "geosite": "geolocation-!ir",
         "outbound": "select"
-      }
-    ],
-    "rule_set": [
-      {
-        "type": "remote",
-        "tag": "geosite-geolocation-!cn",
-        "format": "binary",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-!cn.srs",
-        "download_detour": "select",
-        "update_interval": "24h0m0s"
-      },
-      {
-        "type": "remote",
-        "tag": "geosite-cn",
-        "format": "binary",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/geolocation-cn.srs",
-        "download_detour": "select",
-        "update_interval": "24h0m0s"
-      },
-      {
-        "type": "remote",
-        "tag": "geoip-cn",
-        "format": "binary",
-        "url": "https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geoip/cn.srs",
-        "download_detour": "select",
-        "update_interval": "24h0m0s"
       }
     ],
     "final": "select",
@@ -1460,13 +1432,7 @@ config-sing-boxx(){
   "experimental": {
     "cache_file": {
       "enabled": true,
-      "path": "cache.db",
-      "store_fakeip": true
-    },
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090",
-      "external_ui": "ui",
-      "default_mode": "Rule"
+      "path": "cache.db"
     }
   }
 }
