@@ -92,7 +92,7 @@ check_dependencies() {
 	local dependencies=("curl" "wget" "dnsutils" "openssl" "socat" "coreutils" "jq" "lsof" "qrencode")
 
 	for dep in "${dependencies[@]}"; do
-		if ! command -v "${dep}" &>/dev/null; then
+		if ! dpkg -s "${dep}" &>/dev/null; then
 			echo "${dep} is not installed. Installing..."
 			sudo "${pm}" install "${dep}" -y
 		fi
