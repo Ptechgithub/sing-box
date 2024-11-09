@@ -39,20 +39,19 @@ display_progress() {
 
 #detect_distribution
 detect_distribution() {
-	local pm=""
 
 	if [ -f /etc/os-release ]; then
 		source /etc/os-release
 
 		case "${ID}" in
 		ubuntu | debian)
-			pm="apt"
+			p_m="apt"
 			;;
 		centos)
-			pm="yum"
+			p_m="yum"
 			;;
 		fedora)
-			pm="dnf"
+			p_m="dnf"
 			;;
 		*)
 			echo "Unsupported distribution!"
@@ -61,7 +60,7 @@ detect_distribution() {
 		esac
 
 		echo "${ID}"
-		"${pm}" update -y
+		"${p_m}" update -y
 	else
 		echo "Unsupported distribution!"
 		exit 1
@@ -94,7 +93,7 @@ check_dependencies() {
 	for dep in "${dependencies[@]}"; do
 		if ! dpkg -s "${dep}" &>/dev/null; then
 			echo "${dep} is not installed. Installing..."
-			sudo "${pm}" install "${dep}" -y
+			sudo "${p_m}" install "${dep}" -y
 		fi
 	done
 }
@@ -161,11 +160,11 @@ install_certs() {
 			domainIP=$(dig +short "${domain}")
 			if [[ $domainIP == "$ip" ]]; then
 				if [[ $ID == "CentOS" ]]; then
-					$pm install cronie -y
+					$p_m install cronie -y
 					systemctl start crond
 					systemctl enable crond
 				else
-					$pm install cron -y
+					$p_m install cron -y
 					systemctl start cron
 					systemctl enable cron
 				fi
